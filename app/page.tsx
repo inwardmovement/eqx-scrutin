@@ -3,7 +3,7 @@ import Image from "next/image"
 import { useState, useEffect, useLayoutEffect } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { useToast } from "@/components/ui/use-toast"
+import { toast } from "sonner"
 
 export default function Home() {
   const [file, setFile] = useState<File | null>(null)
@@ -11,7 +11,6 @@ export default function Home() {
   const [isMounted, setIsMounted] = useState(false)
   const router = useRouter()
   const searchParams = useSearchParams()
-  const { toast } = useToast()
 
   // S'assurer que le composant est monté
   useLayoutEffect(() => {
@@ -25,19 +24,15 @@ export default function Home() {
 
     const error = searchParams.get("error")
     if (error === "no_result") {
-      toast({
-        title: "Aucun résultat disponible",
+      toast.error("Aucun résultat disponible", {
         description: "Téléverser un fichier à analyser",
-        variant: "destructive",
       })
     } else if (error === "invalid_data") {
-      toast({
-        title: "Erreur de données",
+      toast.error("Erreur de données", {
         description: "Format de données invalide",
-        variant: "destructive",
       })
     }
-  }, [searchParams, toast, isMounted])
+  }, [searchParams, isMounted])
 
   // Automatically submit the form when a file is selected
   useEffect(() => {

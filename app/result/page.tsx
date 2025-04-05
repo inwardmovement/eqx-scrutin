@@ -23,7 +23,7 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts"
-import { useToast } from "@/components/ui/use-toast"
+import { toast } from "sonner"
 
 type Distribution = {
   [choice: string]: {
@@ -68,7 +68,6 @@ export default function ResultPage() {
   )
   const router = useRouter()
   const searchParams = useSearchParams()
-  const { toast } = useToast()
 
   // Use refs to track if we've already loaded data and shown toasts
   const dataLoadedRef = useRef(false)
@@ -85,13 +84,9 @@ export default function ResultPage() {
       })
       .catch(err => {
         console.error("Failed to copy: ", err)
-        toast({
-          title: "Erreur",
-          description: "Impossible de copier le lien",
-          variant: "destructive",
-        })
+        toast.error("Impossible de copier le lien")
       })
-  }, [toast])
+  }, [])
 
   // Handle returning home
   const handleReturnHome = useCallback(() => {

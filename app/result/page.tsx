@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState, useCallback, useRef } from "react"
+import { useEffect, useState, useCallback, useRef, Suspense } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import Image from "next/image"
 import Link from "next/link"
@@ -60,7 +60,7 @@ const ratingColors = {
   "À rejeter": "#ffffff", // white
 }
 
-export default function ResultPage() {
+function ResultContent() {
   const [data, setData] = useState<ResultData | null>(null)
   const [loading, setLoading] = useState(true)
   const [copyButtonText, setCopyButtonText] = useState(
@@ -307,5 +307,21 @@ export default function ResultPage() {
         </Card>
       </div>
     </main>
+  )
+}
+
+export default function ResultPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto"></div>
+            <p className="mt-4">Chargement du résultat...</p>
+          </div>
+        </div>
+      }>
+      <ResultContent />
+    </Suspense>
   )
 }

@@ -1,11 +1,11 @@
 "use client"
 import Image from "next/image"
-import { useState, useEffect, useLayoutEffect } from "react"
+import { useState, useEffect, useLayoutEffect, Suspense } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { toast } from "sonner"
 
-export default function Home() {
+function HomeContent() {
   const [file, setFile] = useState<File | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [isMounted, setIsMounted] = useState(false)
@@ -151,5 +151,26 @@ export default function Home() {
         </CardContent>
       </Card>
     </main>
+  )
+}
+
+export default function Home() {
+  return (
+    <Suspense
+      fallback={
+        <main className="flex min-h-screen flex-col items-center justify-center p-4">
+          <Card className="w-full max-w-md">
+            <CardHeader className="flex flex-col items-center">
+              <div className="animate-pulse h-24 w-48 bg-gray-200 rounded mb-4"></div>
+              <div className="animate-pulse h-8 w-24 bg-gray-200 rounded"></div>
+            </CardHeader>
+            <CardContent>
+              <div className="animate-pulse h-64 w-full bg-gray-200 rounded"></div>
+            </CardContent>
+          </Card>
+        </main>
+      }>
+      <HomeContent />
+    </Suspense>
   )
 }

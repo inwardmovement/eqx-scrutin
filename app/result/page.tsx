@@ -107,17 +107,8 @@ export default function ResultPage() {
     const encodedData = searchParams.get("data")
 
     if (!encodedData) {
-      // Show toast and redirect
-      toast({
-        title: "Aucun résultat disponible",
-        description: "Téléverser un fichier à analyser",
-        variant: "destructive",
-      })
-
-      // Use a small timeout to ensure the toast has time to be created
-      setTimeout(() => {
-        router.replace("/")
-      }, 100)
+      setLoading(false)
+      router.replace("/?error=no_result")
       return
     }
 
@@ -127,18 +118,8 @@ export default function ResultPage() {
       setLoading(false)
     } catch (error) {
       console.error("Error parsing data from URL:", error)
-
-      // Show toast and redirect
-      toast({
-        title: "Erreur de données",
-        description: "Format de données invalide",
-        variant: "destructive",
-      })
-
-      // Use a small timeout to ensure the toast has time to be created
-      setTimeout(() => {
-        router.replace("/")
-      }, 100)
+      setLoading(false)
+      router.replace("/?error=invalid_data")
     }
   }, []) // Empty dependency array - only run once on mount
 

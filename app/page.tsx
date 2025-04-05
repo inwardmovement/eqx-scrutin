@@ -145,7 +145,8 @@ function HomeContent() {
                               Choix A,Choix B,Choix C,...{"\n"}
                               Bien,Passable,Excellent,...{"\n"}
                               Très bien,Bien,À rejeter,...{"\n"}
-                              Passable,Bien,Excellent,...
+                              Passable,Bien,Excellent,...{"\n"}
+                              ...
                             </code>
                           </pre>
                         </div>

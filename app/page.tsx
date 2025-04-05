@@ -98,7 +98,7 @@ function HomeContent() {
               <div className="flex items-center justify-center w-full">
                 <label
                   htmlFor="document"
-                  className={`flex flex-col items-center justify-center w-full border-2 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:hover:bg-gray-800 dark:bg-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:hover:border-gray-500 ${
+                  className={`group flex flex-col items-center justify-center w-full border-2 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:hover:bg-gray-800 dark:bg-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:hover:border-gray-500 ${
                     isLoading ? "opacity-50 pointer-events-none" : ""
                   }`}>
                   <div className="flex flex-col items-center justify-center p-5">
@@ -137,15 +137,15 @@ function HomeContent() {
                           />
                         </svg>
                         <p className="mb-2 text-sm text-gray-500 dark:text-gray-400 text-center">
-                          Téléversez un fichier CSV au format suivant
+                          Sélectionner un fichier CSV au format suivant
                         </p>
-                        <div className="bg-gray-100 dark:bg-gray-800 p-3 rounded-md w-full mt-2 mb-2 overflow-auto">
+                        <div className="bg-gray-100 dark:bg-gray-800 dark:group-hover:bg-gray-700 p-3 rounded-md w-full mt-2 mb-2 overflow-auto">
                           <pre className="text-xs">
                             <code>
                               Choix A,Choix B,Choix C,...{"\n"}
-                              Bien,Passable,Bien,...{"\n"}
-                              Très bien,Très bien,Insuffisant,...{"\n"}
-                              Bien,Assez bien,Bien,...
+                              Bien,Passable,Excellent,...{"\n"}
+                              Très bien,Bien,À rejeter,...{"\n"}
+                              Passable,Bien,Excellent,...
                             </code>
                           </pre>
                         </div>

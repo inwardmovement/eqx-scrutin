@@ -4,10 +4,25 @@ import { useEffect, useState, useCallback, useRef } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import Image from "next/image"
 import Link from "next/link"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts"
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from "recharts"
 import { useToast } from "@/components/ui/use-toast"
 
 type Distribution = {
@@ -24,7 +39,15 @@ type ResultData = {
 }
 
 // Define the order of ratings for consistent display
-const ratingOrder = ["Excellent", "Très bien", "Bien", "Assez bien", "Passable", "Insuffisant", "À rejeter"]
+const ratingOrder = [
+  "Excellent",
+  "Très bien",
+  "Bien",
+  "Assez bien",
+  "Passable",
+  "Insuffisant",
+  "À rejeter",
+]
 
 // Define colors for each rating
 const ratingColors = {
@@ -40,7 +63,9 @@ const ratingColors = {
 export default function ResultPage() {
   const [data, setData] = useState<ResultData | null>(null)
   const [loading, setLoading] = useState(true)
-  const [copyButtonText, setCopyButtonText] = useState("Copier le lien du résultat")
+  const [copyButtonText, setCopyButtonText] = useState(
+    "Copier le lien du résultat"
+  )
   const router = useRouter()
   const searchParams = useSearchParams()
   const { toast } = useToast()
@@ -58,7 +83,7 @@ export default function ResultPage() {
           setCopyButtonText("Copier le lien du résultat")
         }, 2000)
       })
-      .catch((err) => {
+      .catch(err => {
         console.error("Failed to copy: ", err)
         toast({
           title: "Erreur",
@@ -134,14 +159,17 @@ export default function ResultPage() {
 
   // Transform the distribution data for the stacked bar chart
   // and calculate percentages
-  const chartData = Object.keys(data.distribution).map((choice) => {
+  const chartData = Object.keys(data.distribution).map(choice => {
     const result: { [key: string]: any } = { name: choice }
 
     // Calculate total votes for this choice
-    const totalVotes = Object.values(data.distribution[choice]).reduce((sum, count) => sum + count, 0)
+    const totalVotes = Object.values(data.distribution[choice]).reduce(
+      (sum, count) => sum + count,
+      0
+    )
 
     // Add each rating value to the result as a percentage
-    ratingOrder.forEach((rating) => {
+    ratingOrder.forEach(rating => {
       const count = data.distribution[choice][rating] || 0
       result[rating] = totalVotes > 0 ? (count / totalVotes) * 100 : 0
     })
@@ -170,14 +198,22 @@ export default function ResultPage() {
     <main className="flex min-h-screen flex-col p-4 md:p-8">
       <div className="container mx-auto max-w-6xl">
         <div className="flex flex-col md:flex-row justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold mb-4 md:mb-0">Résultat du scrutin</h1>
+          <h1 className="text-3xl font-bold mb-4 md:mb-0">
+            Résultat du scrutin
+          </h1>
           <div className="flex flex-col md:flex-row items-center gap-4">
             <div className="w-[195px] text-center">
-              <Button onClick={handleCopyLink} variant="ghost" className="w-full">
+              <Button
+                onClick={handleCopyLink}
+                variant="ghost"
+                className="w-full">
                 {copyButtonText}
               </Button>
             </div>
-            <Button onClick={handleReturnHome} variant="ghost">
+            <Button
+              className="md:mr-3"
+              onClick={handleReturnHome}
+              variant="ghost">
               Nouveau scrutin
             </Button>
             <Image
@@ -193,18 +229,26 @@ export default function ResultPage() {
           <Card>
             <CardHeader>
               <CardTitle>Gagnant</CardTitle>
-              <CardDescription>Le choix qui a remporté le scrutin</CardDescription>
+              <CardDescription>
+                Le choix qui a remporté le scrutin
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="flex items-center justify-center h-32">
                 <div className="text-center">
-                  <Badge className="text-lg px-3 py-1 bg-[#ffd412] text-black hover:bg-[#e6c010]">{data.winner}</Badge>
+                  <Badge className="text-lg px-3 py-1 bg-[#ffd412] text-black hover:bg-[#e6c010]">
+                    {data.winner}
+                  </Badge>
                   <p className="mt-2 text-sm text-gray-500">
                     a remporté le scrutin avec la mention{" "}
                     <span
                       className="font-semibold"
-                      style={{ color: ratingColors[data.winningMention as keyof typeof ratingColors] }}
-                    >
+                      style={{
+                        color:
+                          ratingColors[
+                            data.winningMention as keyof typeof ratingColors
+                          ],
+                      }}>
                       {data.winningMention}
                     </span>
                   </p>
@@ -216,7 +260,9 @@ export default function ResultPage() {
           <Card>
             <CardHeader>
               <CardTitle>Distribution des votes</CardTitle>
-              <CardDescription>Répartition des évaluations par choix (en pourcentage)</CardDescription>
+              <CardDescription>
+                Répartition des évaluations par choix (en pourcentage)
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="h-80">
@@ -232,19 +278,18 @@ export default function ResultPage() {
                     }}
                     stackOffset="expand"
                     barCategoryGap={10}
-                    barSize={30}
-                  >
+                    barSize={30}>
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis
                       type="number"
-                      tickFormatter={(value) => `${(value * 100).toFixed(0)}%`}
+                      tickFormatter={value => `${(value * 100).toFixed(0)}%`}
                       domain={[0, 1]}
                       ticks={[0, 0.25, 0.5, 0.75, 1]}
                     />
                     <YAxis dataKey="name" type="category" />
                     <Tooltip content={<CustomTooltip />} />
                     <Legend />
-                    {ratingOrder.map((rating) => (
+                    {ratingOrder.map(rating => (
                       <Bar
                         key={rating}
                         dataKey={rating}
@@ -268,8 +313,7 @@ export default function ResultPage() {
               <Link
                 href="https://fr.wikipedia.org/wiki/Jugement_usuel"
                 target="_blank"
-                className="text-blue-600 hover:underline"
-              >
+                className="text-blue-600 hover:underline">
                 Jugement usuel
               </Link>
             </CardDescription>
@@ -289,4 +333,3 @@ export default function ResultPage() {
     </main>
   )
 }
-

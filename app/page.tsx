@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { toast } from "sonner"
 import { Spinner } from "@/components/ui/spinner"
 import Logo from "@/public/logo-eqx.webp"
+import { processDocument } from "./actions"
 
 function HomeContent() {
   const [file, setFile] = useState<File | null>(null)
@@ -48,30 +49,26 @@ function HomeContent() {
 
     setIsLoading(true)
 
-    const formData = new FormData()
-    formData.append("document", file)
-
     try {
-      const response = await fetch("/api/process", {
-        method: "POST",
-        body: formData,
-      })
+      const formData = new FormData()
+      formData.append("document", file)
 
-      if (response.ok) {
-        // Get the response data
-        const responseData = await response.json()
+      const result = await processDocument(formData)
 
+      if (result.success) {
         // Encode the data to pass in URL
-        const encodedData = encodeURIComponent(JSON.stringify(responseData))
+        const encodedData = encodeURIComponent(JSON.stringify(result.data))
 
         // Redirect to the results page with data
         router.push(`/result?data=${encodedData}`)
       } else {
         console.error("Error processing file")
+        toast.error("Erreur lors du traitement du fichier")
         setIsLoading(false)
       }
     } catch (error) {
       console.error("Error:", error)
+      toast.error("Erreur lors du traitement du fichier")
       setIsLoading(false)
     }
   }
@@ -164,23 +161,6 @@ function HomeContent() {
   )
 }
 
-export default function Home() {
-  return (
-    <Suspense
-      fallback={
-        <main className="flex min-h-screen flex-col items-center justify-center p-4">
-          <Card className="w-full max-w-md">
-            <CardHeader className="flex flex-col items-center">
-              <div className="mb-4 h-24 w-48 animate-pulse rounded bg-gray-200"></div>
-              <div className="h-8 w-24 animate-pulse rounded bg-gray-200"></div>
-            </CardHeader>
-            <CardContent>
-              <div className="h-64 w-full animate-pulse rounded bg-gray-200"></div>
-            </CardContent>
-          </Card>
-        </main>
-      }>
-      <HomeContent />
-    </Suspense>
-  )
+export default function HomePage() {
+  return <HomeContent />
 }

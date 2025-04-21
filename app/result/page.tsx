@@ -100,12 +100,14 @@ function ResultContent() {
   const [copyStatus, setCopyStatus] = useState<"idle" | "success" | "error">(
     "idle",
   )
+  const [tooltipMessage, setTooltipMessage] = useState("Copier")
 
   // Reset copy status after delay
   useEffect(() => {
     if (copyStatus !== "idle") {
       const timer = setTimeout(() => {
         setCopyStatus("idle")
+        setTooltipMessage("Copier")
       }, 2000)
       return () => clearTimeout(timer)
     }
@@ -117,10 +119,12 @@ function ResultContent() {
       .writeText(window.location.href)
       .then(() => {
         setCopyStatus("success")
+        setTooltipMessage("Lien copié")
       })
       .catch(err => {
         console.error("Failed to copy: ", err)
         setCopyStatus("error")
+        setTooltipMessage("Erreur de copie")
       })
   }
 
@@ -130,10 +134,12 @@ function ResultContent() {
       .writeText("Résultat en texte")
       .then(() => {
         setCopyStatus("success")
+        setTooltipMessage("Texte copié")
       })
       .catch(err => {
         console.error("Failed to copy: ", err)
         setCopyStatus("error")
+        setTooltipMessage("Erreur de copie")
       })
   }
 
@@ -174,51 +180,38 @@ function ResultContent() {
             Résultat du scrutin
           </h1>
           <div className="flex flex-col items-center gap-4 md:flex-row">
-            <TooltipProvider>
-              <Tooltip delayDuration={0}>
-                <TooltipTrigger asChild>
-                  <div>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button
-                          variant={getButtonProps().variant}
-                          size="icon"
-                          disabled={isLoading}
-                          className={`h-10 w-10 ${getButtonProps().className}`}>
-                          {getButtonProps().icon}
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={handleCopyLink}>
-                          <Link2 className="mr-2 h-4 w-4" />
-                          Copier le lien
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={handleCopyText}>
-                          <Text className="mr-2 h-4 w-4" />
-                          Copier le texte
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </div>
-                </TooltipTrigger>
-                <TooltipContent side="bottom">Copier</TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-            <TooltipProvider>
-              <Tooltip delayDuration={0}>
-                <TooltipTrigger asChild>
-                  <Button
-                    onClick={handleReturnHome}
-                    variant="ghost"
-                    size="icon"
-                    disabled={isLoading}
-                    className="md:mr-3">
-                    <Newspaper className="h-4 w-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent side="bottom">Nouveau scrutin</TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant={getButtonProps().variant}
+                  disabled={isLoading}
+                  className={`${getButtonProps().className}`}>
+                  {getButtonProps().icon}
+                  <span
+                    className={`ml-2 ${copyStatus === "success" ? "text-green-600" : ""}`}>
+                    {tooltipMessage}
+                  </span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={handleCopyLink}>
+                  <Link2 className="mr-2 h-4 w-4" />
+                  Copier le lien
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={handleCopyText}>
+                  <Text className="mr-2 h-4 w-4" />
+                  Copier le texte
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <Button
+              onClick={handleReturnHome}
+              variant="ghost"
+              disabled={isLoading}
+              className="md:mr-3">
+              <Newspaper className="mr-2 h-4 w-4" />
+              Nouveau scrutin
+            </Button>
             <Image src={Logo} alt="Logo Equinoxe" width={150} height={70} />
           </div>
         </div>

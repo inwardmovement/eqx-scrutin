@@ -8,20 +8,16 @@ import { Spinner } from "@/components/ui/spinner"
 import Logo from "@/public/logo-eqx.webp"
 import { processDocument } from "./actions"
 
-function HomeContent() {
-  const [file, setFile] = useState<File | null>(null)
-  const [isLoading, setIsLoading] = useState(false)
-  const [isMounted, setIsMounted] = useState(false)
-  const router = useRouter()
+// Composant séparé pour gérer les paramètres d'URL
+function ErrorHandler() {
   const searchParams = useSearchParams()
+  const [isMounted, setIsMounted] = useState(false)
 
-  // S'assurer que le composant est monté
   useLayoutEffect(() => {
     setIsMounted(true)
     return () => setIsMounted(false)
   }, [])
 
-  // Gérer les erreurs via les paramètres d'URL
   useEffect(() => {
     if (!isMounted) return
 
@@ -36,6 +32,14 @@ function HomeContent() {
       })
     }
   }, [searchParams, isMounted])
+
+  return null
+}
+
+function HomeContent() {
+  const [file, setFile] = useState<File | null>(null)
+  const [isLoading, setIsLoading] = useState(false)
+  const router = useRouter()
 
   // Automatically submit the form when a file is selected
   useEffect(() => {
@@ -162,5 +166,12 @@ function HomeContent() {
 }
 
 export default function HomePage() {
-  return <HomeContent />
+  return (
+    <>
+      <Suspense>
+        <ErrorHandler />
+      </Suspense>
+      <HomeContent />
+    </>
+  )
 }

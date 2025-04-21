@@ -23,23 +23,22 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts"
-import { toast } from "sonner"
-import { Spinner } from "@/components/ui/spinner"
 import { Skeleton } from "@/components/ui/skeleton"
 import Logo from "@/public/logo-eqx.webp"
-import {
-  TooltipProvider,
-  Tooltip,
-  TooltipTrigger,
-  TooltipContent,
-} from "@/components/ui/tooltip"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { Copy, Link2, Text, Newspaper, Check, X } from "lucide-react"
+import {
+  Link2,
+  Text,
+  Newspaper,
+  Check,
+  X,
+  EllipsisVertical,
+} from "lucide-react"
 
 type Distribution = {
   [choice: string]: {
@@ -100,14 +99,12 @@ function ResultContent() {
   const [copyStatus, setCopyStatus] = useState<"idle" | "success" | "error">(
     "idle",
   )
-  const [tooltipMessage, setTooltipMessage] = useState("Copier")
 
   // Reset copy status after delay
   useEffect(() => {
     if (copyStatus !== "idle") {
       const timer = setTimeout(() => {
         setCopyStatus("idle")
-        setTooltipMessage("Copier")
       }, 2000)
       return () => clearTimeout(timer)
     }
@@ -119,12 +116,10 @@ function ResultContent() {
       .writeText(window.location.href)
       .then(() => {
         setCopyStatus("success")
-        setTooltipMessage("Lien copié")
       })
       .catch(err => {
         console.error("Failed to copy: ", err)
         setCopyStatus("error")
-        setTooltipMessage("Erreur de copie")
       })
   }
 
@@ -134,12 +129,10 @@ function ResultContent() {
       .writeText("Résultat en texte")
       .then(() => {
         setCopyStatus("success")
-        setTooltipMessage("Texte copié")
       })
       .catch(err => {
         console.error("Failed to copy: ", err)
         setCopyStatus("error")
-        setTooltipMessage("Erreur de copie")
       })
   }
 
@@ -149,19 +142,19 @@ function ResultContent() {
       case "success":
         return {
           variant: "ghost" as const,
-          icon: <Check className="h-4 w-4 text-green-600" />,
+          icon: <Check className="text-green-600" />,
           className: "",
         }
       case "error":
         return {
           variant: "destructive" as const,
-          icon: <X className="h-4 w-4" />,
+          icon: <X />,
           className: "",
         }
       default:
         return {
           variant: "ghost" as const,
-          icon: <Copy className="h-4 w-4" />,
+          icon: <EllipsisVertical />,
           className: "",
         }
     }
@@ -176,10 +169,8 @@ function ResultContent() {
     <main className="flex min-h-screen flex-col p-4 md:p-8">
       <div className="container mx-auto max-w-6xl">
         <div className="mb-6 flex flex-col items-center justify-between md:flex-row">
-          <h1 className="mb-4 text-3xl font-bold md:mb-0">
-            Résultat du scrutin
-          </h1>
-          <div className="flex flex-col items-center gap-4 md:flex-row">
+          <div className="flex flex-col items-center md:flex-row md:gap-4">
+            <h1 className="text-3xl font-bold">Résultat du scrutin</h1>
             <DropdownMenu>
               <DropdownMenuTrigger
                 asChild
@@ -187,12 +178,9 @@ function ResultContent() {
                 <Button
                   variant={getButtonProps().variant}
                   disabled={isLoading}
-                  className={`${getButtonProps().className} gap-1`}>
+                  className={`${getButtonProps().className}`}
+                  size="icon">
                   {getButtonProps().icon}
-                  <span
-                    className={`ml-2 ${copyStatus === "success" ? "text-green-600" : ""}`}>
-                    {tooltipMessage}
-                  </span>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
@@ -204,18 +192,20 @@ function ResultContent() {
                   <Text className="mr-2 h-4 w-4" />
                   Copier le texte
                 </DropdownMenuItem>
+                <DropdownMenuItem onClick={handleReturnHome} className="gap-1">
+                  <Newspaper className="mr-2 h-4 w-4" />
+                  Nouveau scrutin
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-            <Button
-              onClick={handleReturnHome}
-              variant="ghost"
-              disabled={isLoading}
-              className="gap-1 md:mr-3">
-              <Newspaper className="mr-2 h-4 w-4" />
-              Nouveau
-            </Button>
-            <Image src={Logo} alt="Logo Equinoxe" width={150} height={70} />
           </div>
+          <Image
+            src={Logo}
+            alt="Logo Equinoxe"
+            width={150}
+            height={70}
+            className="hidden md:block"
+          />
         </div>
 
         <Suspense>

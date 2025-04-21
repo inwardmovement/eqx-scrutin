@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState, useCallback, useRef, Suspense } from "react"
+import { Suspense, useState, useEffect } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import Image from "next/image"
 import Link from "next/link"
@@ -24,6 +24,7 @@ import {
   ResponsiveContainer,
 } from "recharts"
 import { toast } from "sonner"
+import { Spinner } from "@/components/ui/spinner"
 
 type Distribution = {
   [choice: string]: {
@@ -60,20 +61,56 @@ const ratingColors = {
   "À rejeter": "#ffffff", // white
 }
 
+// Custom tooltip to display percentages
+const CustomTooltip = ({ active, payload, label }: any) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="bg-white p-3 border rounded shadow-lg">
+        <p className="font-bold">{label}</p>
+        {payload.map((entry: any, index: number) => (
+          <p key={`item-${index}`} style={{ color: entry.color }}>
+            {`${entry.name}: ${entry.value.toFixed(1)}%`}
+          </p>
+        ))}
+      </div>
+    )
+  }
+  return null
+}
+
 function ResultContent() {
-  const [data, setData] = useState<ResultData | null>(null)
-  const [loading, setLoading] = useState(true)
+  const router = useRouter()
+  const searchParams = useSearchParams()
   const [copyButtonText, setCopyButtonText] = useState(
     "Copier le lien du résultat"
   )
-  const router = useRouter()
-  const searchParams = useSearchParams()
+  const [data, setData] = useState<ResultData | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
 
-  // Use refs to track if we've already loaded data and shown toasts
-  const dataLoadedRef = useRef(false)
+  useEffect(() => {
+    const encodedData = searchParams.get("data")
+    if (!encodedData) {
+      router.replace("/?error=no_result")
+      return
+    }
+
+    try {
+      const decodedData = JSON.parse(decodeURIComponent(encodedData))
+      if (!decodedData) {
+        router.replace("/?error=invalid_data")
+        return
+      }
+      setData(decodedData)
+    } catch (error) {
+      console.error("Error parsing data from URL:", error)
+      router.replace("/?error=invalid_data")
+    } finally {
+      setIsLoading(false)
+    }
+  }, [searchParams, router])
 
   // Handle copying link
-  const handleCopyLink = useCallback(() => {
+  const handleCopyLink = () => {
     navigator.clipboard
       .writeText(window.location.href)
       .then(() => {
@@ -86,67 +123,29 @@ function ResultContent() {
         console.error("Failed to copy: ", err)
         toast.error("Impossible de copier le lien")
       })
-  }, [])
+  }
 
   // Handle returning home
-  const handleReturnHome = useCallback(() => {
+  const handleReturnHome = () => {
     router.push("/")
-  }, [router])
+  }
 
-  // Load data only once on component mount
-  useEffect(() => {
-    // Only run this once
-    if (dataLoadedRef.current) return
-    dataLoadedRef.current = true
-
-    const encodedData = searchParams.get("data")
-
-    if (!encodedData) {
-      setLoading(false)
-      router.replace("/?error=no_result")
-      return
-    }
-
-    try {
-      const decodedData = JSON.parse(decodeURIComponent(encodedData))
-      setData(decodedData)
-      setLoading(false)
-    } catch (error) {
-      console.error("Error parsing data from URL:", error)
-      setLoading(false)
-      router.replace("/?error=invalid_data")
-    }
-  }, []) // Empty dependency array - only run once on mount
-
-  if (loading) {
+  // Si les données sont en cours de chargement, afficher le spinner
+  if (isLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto"></div>
-          <svg
-            className="animate-spin mr-3 h-5 w-5 text-gray-900 dark:text-gray-100"
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24">
-            <circle
-              className="opacity-25"
-              cx="12"
-              cy="12"
-              r="10"
-              stroke="currentColor"
-              strokeWidth="4"></circle>
-            <path
-              className="opacity-75"
-              fill="currentColor"
-              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-          </svg>
-        </div>
-      </div>
+      <main className="flex min-h-screen flex-col items-center justify-center p-4">
+        <Card className="w-full max-w-6xl">
+          <CardContent className="flex items-center justify-center min-h-[50vh]">
+            <Spinner className="size-12" />
+          </CardContent>
+        </Card>
+      </main>
     )
   }
 
+  // Si pas de données après le chargement, ne rien afficher
   if (!data) {
-    return null // This should not happen as we redirect if no data
+    return null
   }
 
   // Transform the distribution data for the stacked bar chart
@@ -156,7 +155,7 @@ function ResultContent() {
 
     // Calculate total votes for this choice
     const totalVotes = Object.values(data.distribution[choice]).reduce(
-      (sum, count) => sum + count,
+      (sum: number, count: number) => sum + count,
       0
     )
 
@@ -168,23 +167,6 @@ function ResultContent() {
 
     return result
   })
-
-  // Custom tooltip to display percentages
-  const CustomTooltip = ({ active, payload, label }: any) => {
-    if (active && payload && payload.length) {
-      return (
-        <div className="bg-white p-3 border rounded shadow-lg">
-          <p className="font-bold">{label}</p>
-          {payload.map((entry: any, index: number) => (
-            <p key={`item-${index}`} style={{ color: entry.color }}>
-              {`${entry.name}: ${entry.value.toFixed(1)}%`}
-            </p>
-          ))}
-        </div>
-      )
-    }
-    return null
-  }
 
   return (
     <main className="flex min-h-screen flex-col p-4 md:p-8">
@@ -315,7 +297,7 @@ function ResultContent() {
               {Object.entries(data.details).map(([key, value]) => (
                 <div key={key} className="border rounded-lg p-4">
                   <dt className="font-medium text-gray-700">{key}</dt>
-                  <dd className="mt-1 text-gray-500">{value}</dd>
+                  <dd className="mt-1 text-gray-500">{String(value)}</dd>
                 </div>
               ))}
             </dl>
@@ -330,28 +312,13 @@ export default function ResultPage() {
   return (
     <Suspense
       fallback={
-        <div className="flex min-h-screen items-center justify-center">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto"></div>
-            <svg
-              className="animate-spin mr-3 h-5 w-5 text-gray-900 dark:text-gray-100"
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24">
-              <circle
-                className="opacity-25"
-                cx="12"
-                cy="12"
-                r="10"
-                stroke="currentColor"
-                strokeWidth="4"></circle>
-              <path
-                className="opacity-75"
-                fill="currentColor"
-                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
-          </div>
-        </div>
+        <main className="flex min-h-screen flex-col items-center justify-center p-4">
+          <Card className="w-full max-w-6xl">
+            <CardContent className="flex items-center justify-center min-h-[50vh]">
+              <Spinner className="size-12" />
+            </CardContent>
+          </Card>
+        </main>
       }>
       <ResultContent />
     </Suspense>

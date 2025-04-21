@@ -13,6 +13,7 @@ import { toast } from "sonner"
 import { Spinner } from "@/components/ui/spinner"
 import Logo from "@/public/logo-eqx.webp"
 import { processDocument } from "./actions"
+import Link from "next/link"
 
 // Composant séparé pour gérer les paramètres d'URL
 function ErrorHandler() {
@@ -166,10 +167,19 @@ function HomeContent() {
             </div>
           </div>
         </CardContent>
-        <CardFooter>
+        <CardFooter className="flex-col items-start">
           <p className="text-xs text-gray-600">
             Mentions possibles : <em>Excellent</em>, <em>Bien</em>,{" "}
             <em>Passable</em>, <em>Insuffisant</em>, <em>À rejeter</em>
+          </p>
+          <p className="text-xs text-gray-600">
+            Résultat calculé au{" "}
+            <Link
+              href="https://fr.wikipedia.org/wiki/Jugement_usuel"
+              target="_blank"
+              className="text-blue-600 hover:underline">
+              Jugement usuel
+            </Link>
           </p>
         </CardFooter>
       </Card>

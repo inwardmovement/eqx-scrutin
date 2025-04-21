@@ -34,7 +34,7 @@ import {
 import {
   Link2,
   Text,
-  Newspaper,
+  ChartLine,
   Check,
   X,
   EllipsisVertical,
@@ -53,7 +53,7 @@ type ResultData = {
   details: { [key: string]: string }
 }
 
-// Define the order of ratings for consistent display
+// Ordre des mentions
 const ratingOrder = [
   "Excellent",
   "Bien",
@@ -62,7 +62,7 @@ const ratingOrder = [
   "À rejeter",
 ]
 
-// Define colors for each rating
+// Couleurs des mentions
 const ratingColors = {
   Excellent: "#84cc16", // lime-500
   Bien: "#047857", // emerald-700
@@ -71,17 +71,25 @@ const ratingColors = {
   "À rejeter": "#ffffff", // white
 }
 
-// Custom tooltip to display percentages
+// Tooltip pourcentages
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
+    const choice = label
+    const distribution =
+      payload[0]?.payload?.originalDistribution?.[choice] || {}
+
     return (
       <div className="rounded border bg-background p-3 shadow-lg">
-        <p className="font-bold text-foreground">{label}</p>
-        {payload.map((entry: any, index: number) => (
-          <p key={`item-${index}`} style={{ color: entry.color }}>
-            {`${entry.name}: ${entry.value.toFixed(1)}%`}
-          </p>
-        ))}
+        <p className="font-bold text-foreground">{choice}</p>
+        {payload.map((entry: any, index: number) => {
+          const rating = entry.name
+          const votes = distribution[rating] || 0
+          return (
+            <p key={`item-${index}`} style={{ color: entry.color }}>
+              {`${rating}: ${entry.value.toFixed(1)}% (${votes})`}
+            </p>
+          )
+        })}
       </div>
     )
   }
@@ -180,16 +188,16 @@ function ResultContent() {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={handleCopyLink} className="gap-1">
-                  <Link2 className="mr-2 h-4 w-4" />
+                <DropdownMenuItem onClick={handleCopyLink} className="gap-2">
+                  <Link2 />
                   Copier le lien
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={handleCopyText} className="gap-1">
-                  <Text className="mr-2 h-4 w-4" />
+                <DropdownMenuItem onClick={handleCopyText} className="gap-2">
+                  <Text />
                   Copier le texte
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={handleReturnHome} className="gap-1">
-                  <Newspaper className="mr-2 h-4 w-4" />
+                <DropdownMenuItem onClick={handleReturnHome} className="gap-2">
+                  <ChartLine />
                   Nouveau scrutin
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -328,6 +336,9 @@ function ResultDisplay({ data }: { data: ResultData }) {
       (sum: number, count: number) => sum + count,
       0,
     )
+
+    // Store the original distribution for the tooltip
+    result.originalDistribution = data.distribution
 
     // Add each rating value to the result as a percentage
     ratingOrder.forEach(rating => {

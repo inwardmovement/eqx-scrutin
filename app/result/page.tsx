@@ -26,6 +26,7 @@ import {
 import { toast } from "sonner"
 import { Spinner } from "@/components/ui/spinner"
 import { Skeleton } from "@/components/ui/skeleton"
+import Logo from "@/public/logo-eqx.webp"
 
 type Distribution = {
   [choice: string]: {
@@ -66,7 +67,7 @@ const ratingColors = {
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
     return (
-      <div className="bg-white p-3 border rounded shadow-lg">
+      <div className="rounded border bg-white p-3 shadow-lg">
         <p className="font-bold">{label}</p>
         {payload.map((entry: any, index: number) => (
           <p key={`item-${index}`} style={{ color: entry.color }}>
@@ -83,7 +84,7 @@ function ResultContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [copyButtonText, setCopyButtonText] = useState(
-    "Copier le lien du résultat"
+    "Copier le lien du résultat",
   )
   const [data, setData] = useState<ResultData | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -136,11 +137,11 @@ function ResultContent() {
     return (
       <main className="flex min-h-screen flex-col p-4 md:p-8">
         <div className="container mx-auto max-w-6xl">
-          <div className="flex flex-col md:flex-row justify-between items-center mb-6">
-            <h1 className="text-3xl font-bold mb-4 md:mb-0">
+          <div className="mb-6 flex flex-col items-center justify-between md:flex-row">
+            <h1 className="mb-4 text-3xl font-bold md:mb-0">
               Résultat du scrutin
             </h1>
-            <div className="flex flex-col md:flex-row items-center gap-4">
+            <div className="flex flex-col items-center gap-4 md:flex-row">
               <div className="w-[195px] text-center">
                 <Button variant="ghost" className="w-full" disabled>
                   Copier le lien du résultat
@@ -149,16 +150,11 @@ function ResultContent() {
               <Button className="md:mr-3" variant="ghost" disabled>
                 Nouveau scrutin
               </Button>
-              <Image
-                src="/logo-equinoxe.webp"
-                alt="Logo Equinoxe"
-                width={150}
-                height={70}
-              />
+              <Image src={Logo} alt="Logo Equinoxe" width={150} height={70} />
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+          <div className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-2">
             <Card>
               <CardHeader>
                 <CardTitle>Gagnant</CardTitle>
@@ -167,9 +163,9 @@ function ResultContent() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="flex items-center justify-center h-32">
-                  <div className="text-center space-y-4">
-                    <Skeleton className="h-8 w-32 mx-auto" />
+                <div className="flex h-32 items-center justify-center">
+                  <div className="space-y-4 text-center">
+                    <Skeleton className="mx-auto h-8 w-32" />
                     <Skeleton className="h-4 w-48" />
                   </div>
                 </div>
@@ -185,7 +181,7 @@ function ResultContent() {
               </CardHeader>
               <CardContent>
                 <div className="h-80">
-                  <Skeleton className="w-full h-full" />
+                  <Skeleton className="h-full w-full" />
                 </div>
               </CardContent>
             </Card>
@@ -205,9 +201,9 @@ function ResultContent() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <dl className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <dl className="grid grid-cols-1 gap-4 md:grid-cols-3">
                 {[1, 2, 3].map((_, index) => (
-                  <div key={index} className="border rounded-lg p-4 space-y-2">
+                  <div key={index} className="space-y-2 rounded-lg border p-4">
                     <Skeleton className="h-4 w-24" />
                     <Skeleton className="h-4 w-full" />
                   </div>
@@ -233,7 +229,7 @@ function ResultContent() {
     // Calculate total votes for this choice
     const totalVotes = Object.values(data.distribution[choice]).reduce(
       (sum: number, count: number) => sum + count,
-      0
+      0,
     )
 
     // Add each rating value to the result as a percentage
@@ -248,11 +244,11 @@ function ResultContent() {
   return (
     <main className="flex min-h-screen flex-col p-4 md:p-8">
       <div className="container mx-auto max-w-6xl">
-        <div className="flex flex-col md:flex-row justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold mb-4 md:mb-0">
+        <div className="mb-6 flex flex-col items-center justify-between md:flex-row">
+          <h1 className="mb-4 text-3xl font-bold md:mb-0">
             Résultat du scrutin
           </h1>
-          <div className="flex flex-col md:flex-row items-center gap-4">
+          <div className="flex flex-col items-center gap-4 md:flex-row">
             <div className="w-[195px] text-center">
               <Button
                 onClick={handleCopyLink}
@@ -267,16 +263,11 @@ function ResultContent() {
               variant="ghost">
               Nouveau scrutin
             </Button>
-            <Image
-              src="/logo-equinoxe.webp"
-              alt="Logo Equinoxe"
-              width={150}
-              height={70}
-            />
+            <Image src={Logo} alt="Logo Equinoxe" width={150} height={70} />
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        <div className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-2">
           <Card>
             <CardHeader>
               <CardTitle>Gagnant</CardTitle>
@@ -285,9 +276,9 @@ function ResultContent() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="flex items-center justify-center h-32">
+              <div className="flex h-32 items-center justify-center">
                 <div className="text-center">
-                  <Badge className="text-lg px-3 py-1 bg-[#ffd412] text-black hover:bg-[#e6c010]">
+                  <Badge className="bg-[#ffd412] px-3 py-1 text-lg text-black hover:bg-[#e6c010]">
                     {data.winner}
                   </Badge>
                   <p className="mt-2 text-sm text-gray-500">
@@ -370,9 +361,9 @@ function ResultContent() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <dl className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <dl className="grid grid-cols-1 gap-4 md:grid-cols-3">
               {Object.entries(data.details).map(([key, value]) => (
-                <div key={key} className="border rounded-lg p-4">
+                <div key={key} className="rounded-lg border p-4">
                   <dt className="font-medium text-gray-700">{key}</dt>
                   <dd className="mt-1 text-gray-500">{String(value)}</dd>
                 </div>
@@ -391,7 +382,7 @@ export default function ResultPage() {
       fallback={
         <main className="flex min-h-screen flex-col items-center justify-center p-4">
           <Card className="w-full max-w-6xl">
-            <CardContent className="flex items-center justify-center min-h-[50vh]">
+            <CardContent className="flex min-h-[50vh] items-center justify-center">
               <Spinner className="size-12" />
             </CardContent>
           </Card>

@@ -1,3 +1,8 @@
 nodeVersion: 22.14.0
+
 engineStrict: true
+
 packageManagerStrictVersion: true
+
+onlyBuiltDependencies:
+  - sharp

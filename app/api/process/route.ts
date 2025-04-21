@@ -6,7 +6,10 @@ export async function POST(request: NextRequest) {
     const document = formData.get("document") as File
 
     if (!document) {
-      return NextResponse.json({ error: "No document provided" }, { status: 400 })
+      return NextResponse.json(
+        { error: "No document provided" },
+        { status: 400 },
+      )
     }
 
     // Log document content
@@ -74,7 +77,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(responseData)
   } catch (error) {
     console.error("Error processing document:", error)
-    return NextResponse.json({ error: "Error processing document" }, { status: 500 })
+    return NextResponse.json(
+      { error: "Error processing document" },
+      { status: 500 },
+    )
   }
 }
-

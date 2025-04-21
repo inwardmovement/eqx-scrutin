@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { toast } from "sonner"
 import { Spinner } from "@/components/ui/spinner"
+import Logo from "@/public/logo-eqx.webp"
 
 function HomeContent() {
   const [file, setFile] = useState<File | null>(null)
@@ -83,11 +84,11 @@ function HomeContent() {
   }, [])
 
   return (
-    <main className="flex flex-col items-center mt-16 p-4">
+    <main className="mt-16 flex flex-col items-center p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="flex flex-col items-center">
           <Image
-            src="/logo-equinoxe.webp"
+            src={Logo}
             alt="Logo Equinoxe"
             width={200}
             height={94}
@@ -100,14 +101,14 @@ function HomeContent() {
             <div className="flex flex-col space-y-2">
               <label
                 htmlFor="document"
-                className="text-sm font-medium leading-none sr-only">
+                className="sr-only text-sm font-medium leading-none">
                 {isLoading ? "Traitement en cours..." : ""}
               </label>
-              <div className="flex items-center justify-center w-full">
+              <div className="flex w-full items-center justify-center">
                 <label
                   htmlFor="document"
-                  className={`group flex flex-col items-center justify-center w-full border-2 border-dashed rounded-lg cursor-pointer bg-gray-100 dark:hover:bg-gray-700 dark:bg-gray-800 hover:bg-gray-50 dark:border-gray-600 dark:hover:border-gray-500 ${
-                    isLoading ? "opacity-50 pointer-events-none" : ""
+                  className={`group flex w-full cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed bg-gray-100 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:hover:border-gray-500 dark:hover:bg-gray-700 ${
+                    isLoading ? "pointer-events-none opacity-50" : ""
                   }`}>
                   <div className="flex flex-col items-center justify-center p-5">
                     {isLoading ? (
@@ -115,7 +116,7 @@ function HomeContent() {
                     ) : (
                       <>
                         <svg
-                          className="w-8 h-8 mb-3 text-gray-500 dark:text-gray-400"
+                          className="mb-3 h-8 w-8 text-gray-500 dark:text-gray-400"
                           aria-hidden="true"
                           xmlns="http://www.w3.org/2000/svg"
                           fill="none"
@@ -128,10 +129,10 @@ function HomeContent() {
                             d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"
                           />
                         </svg>
-                        <p className="mb-2 text-sm text-gray-500 dark:text-gray-400 text-center">
+                        <p className="mb-2 text-center text-sm text-gray-500 dark:text-gray-400">
                           Sélectionner un fichier CSV au format suivant
                         </p>
-                        <div className="bg-gray-100 dark:bg-gray-700 dark:group-hover:bg-gray-800 p-3 rounded-md w-full mt-2 mb-2 overflow-auto">
+                        <div className="mb-2 mt-2 w-full overflow-auto rounded-md bg-gray-100 p-3 dark:bg-gray-700 dark:group-hover:bg-gray-800">
                           <pre className="text-xs">
                             <code className="text-xs">
                               Choix A,Choix B,Choix C,...{"\n"}
@@ -170,11 +171,11 @@ export default function Home() {
         <main className="flex min-h-screen flex-col items-center justify-center p-4">
           <Card className="w-full max-w-md">
             <CardHeader className="flex flex-col items-center">
-              <div className="animate-pulse h-24 w-48 bg-gray-200 rounded mb-4"></div>
-              <div className="animate-pulse h-8 w-24 bg-gray-200 rounded"></div>
+              <div className="mb-4 h-24 w-48 animate-pulse rounded bg-gray-200"></div>
+              <div className="h-8 w-24 animate-pulse rounded bg-gray-200"></div>
             </CardHeader>
             <CardContent>
-              <div className="animate-pulse h-64 w-full bg-gray-200 rounded"></div>
+              <div className="h-64 w-full animate-pulse rounded bg-gray-200"></div>
             </CardContent>
           </Card>
         </main>

@@ -170,7 +170,7 @@ function ResultContent() {
             <DropdownMenu>
               <DropdownMenuTrigger
                 asChild
-                className={`${copyStatus === "success" ? "focus-visible:ring-0 focus-visible:ring-offset-0" : ""}`}>
+                className={`${copyStatus === "success" ? "focus-visible:ring-0 focus-visible:ring-offset-0" : ""} rounded-full`}>
                 <Button
                   variant={getButtonProps().variant}
                   disabled={isLoading}

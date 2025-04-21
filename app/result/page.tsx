@@ -67,8 +67,8 @@ const ratingColors = {
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
     return (
-      <div className="rounded border bg-white p-3 shadow-lg">
-        <p className="font-bold">{label}</p>
+      <div className="rounded border bg-background p-3 shadow-lg">
+        <p className="font-bold text-foreground">{label}</p>
         {payload.map((entry: any, index: number) => (
           <p key={`item-${index}`} style={{ color: entry.color }}>
             {`${entry.name}: ${entry.value.toFixed(1)}%`}
@@ -321,15 +321,27 @@ function ResultContent() {
                     stackOffset="expand"
                     barCategoryGap={10}
                     barSize={30}>
-                    <CartesianGrid strokeDasharray="3 3" />
+                    <CartesianGrid
+                      strokeDasharray="3 3"
+                      stroke="currentColor"
+                      opacity={0.1}
+                    />
                     <XAxis
                       type="number"
                       tickFormatter={value => `${(value * 100).toFixed(0)}%`}
                       domain={[0, 1]}
                       ticks={[0, 0.25, 0.5, 0.75, 1]}
+                      // stroke="currentColor"
                     />
-                    <YAxis dataKey="name" type="category" />
-                    <Tooltip content={<CustomTooltip />} />
+                    <YAxis
+                      dataKey="name"
+                      type="category"
+                      // stroke="currentColor"
+                    />
+                    <Tooltip
+                      content={<CustomTooltip />}
+                      cursor={{ fill: "currentColor", opacity: 0.1 }}
+                    />
                     <Legend />
                     {ratingOrder.map(rating => (
                       <Bar

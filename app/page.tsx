@@ -167,20 +167,23 @@ function HomeContent() {
             </div>
           </div>
         </CardContent>
-        <CardFooter className="flex-col items-start">
-          <p className="text-xs text-gray-600">
-            Mentions possibles : <em>Excellent</em>, <em>Bien</em>,{" "}
-            <em>Passable</em>, <em>Insuffisant</em>, <em>À rejeter</em>
-          </p>
-          <p className="text-xs text-gray-600">
-            Résultat calculé au{" "}
-            <Link
-              href="https://fr.wikipedia.org/wiki/Jugement_usuel"
-              target="_blank"
-              className="text-blue-600 hover:underline">
-              Jugement usuel
-            </Link>
-          </p>
+        <CardFooter className="flex-col items-start text-xs text-gray-600">
+          <ul className="list-disc pl-4">
+            <li>
+              Mentions possibles : <em>Excellent</em>, <em>Bien</em>,{" "}
+              <em>Passable</em>, <em>Insuffisant</em>, <em>À rejeter</em>
+            </li>
+            <li>10 choix maximum</li>
+            <li>
+              Résultat calculé au{" "}
+              <Link
+                href="https://fr.wikipedia.org/wiki/Jugement_usuel"
+                target="_blank"
+                className="text-blue-600 hover:underline">
+                Jugement usuel
+              </Link>
+            </li>
+          </ul>
         </CardFooter>
       </Card>
     </main>

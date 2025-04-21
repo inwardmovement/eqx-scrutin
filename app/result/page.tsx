@@ -64,10 +64,10 @@ const ratingOrder = [
 
 // Define colors for each rating
 const ratingColors = {
-  Excellent: "#9acd32", // yellowgreen
-  Bien: "#1e8e3e", // darker green
-  Passable: "#ffa500", // orange
-  Insuffisant: "#f87171", // red-400
+  Excellent: "#84cc16", // lime-500
+  Bien: "#047857", // emerald-700
+  Passable: "#fb923c", // orange-400
+  Insuffisant: "#e11d48", // rose-600
   "À rejeter": "#ffffff", // white
 }
 

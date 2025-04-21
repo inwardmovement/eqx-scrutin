@@ -56,9 +56,7 @@ type ResultData = {
 // Define the order of ratings for consistent display
 const ratingOrder = [
   "Excellent",
-  "Très bien",
   "Bien",
-  "Assez bien",
   "Passable",
   "Insuffisant",
   "À rejeter",
@@ -66,10 +64,8 @@ const ratingOrder = [
 
 // Define colors for each rating
 const ratingColors = {
-  Excellent: "#1e8e3e", // darker green
-  "Très bien": "#4ade80", // green-400
-  Bien: "#9acd32", // yellowgreen
-  "Assez bien": "#ffd700", // yellow
+  Excellent: "#9acd32", // yellowgreen
+  Bien: "#1e8e3e", // darker green
   Passable: "#ffa500", // orange
   Insuffisant: "#f87171", // red-400
   "À rejeter": "#ffffff", // white

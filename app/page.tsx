@@ -2,7 +2,13 @@
 import Image from "next/image"
 import { useState, useEffect, useLayoutEffect, Suspense } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
 import { toast } from "sonner"
 import { Spinner } from "@/components/ui/spinner"
 import Logo from "@/public/logo-eqx.webp"
@@ -136,10 +142,10 @@ function HomeContent() {
                         <div className="mb-2 mt-2 w-full overflow-auto rounded-md bg-gray-700 p-3 group-hover:bg-gray-800">
                           <pre className="text-xs">
                             <code className="text-xs">
-                              Choix A,Choix B,Choix C,...{"\n"}
-                              Bien,Passable,Excellent,...{"\n"}
-                              Très bien,Bien,À rejeter,...{"\n"}
-                              Passable,Bien,Excellent,...{"\n"}
+                              Choix A,Choix B,Choix C...{"\n"}
+                              Excellent,Passable,Bien...{"\n"}
+                              Insuffisant,Bien,Passable...{"\n"}
+                              Excellent,À rejeter,Bien...{"\n"}
                               ...
                             </code>
                           </pre>
@@ -160,6 +166,12 @@ function HomeContent() {
             </div>
           </div>
         </CardContent>
+        <CardFooter>
+          <p className="text-xs text-gray-600">
+            Mentions possibles : <em>Excellent</em>, <em>Bien</em>,{" "}
+            <em>Passable</em>, <em>Insuffisant</em>, <em>À rejeter</em>
+          </p>
+        </CardFooter>
       </Card>
     </main>
   )

@@ -33,7 +33,13 @@ import {
   TooltipTrigger,
   TooltipContent,
 } from "@/components/ui/tooltip"
-import { Newspaper } from "lucide-react"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { Copy, Link2, Text, Newspaper, Check, X } from "lucide-react"
 
 type Distribution = {
   [choice: string]: {
@@ -89,26 +95,70 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 
 function ResultContent() {
   const router = useRouter()
-  const [copyButtonText, setCopyButtonText] = useState(
-    "Copier le lien du résultat",
-  )
   const [data, setData] = useState<ResultData | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [copyStatus, setCopyStatus] = useState<"idle" | "success" | "error">(
+    "idle",
+  )
+
+  // Reset copy status after delay
+  useEffect(() => {
+    if (copyStatus !== "idle") {
+      const timer = setTimeout(() => {
+        setCopyStatus("idle")
+      }, 2000)
+      return () => clearTimeout(timer)
+    }
+  }, [copyStatus])
 
   // Handle copying link
   const handleCopyLink = () => {
     navigator.clipboard
       .writeText(window.location.href)
       .then(() => {
-        setCopyButtonText("Lien copié")
-        setTimeout(() => {
-          setCopyButtonText("Copier le lien du résultat")
-        }, 2000)
+        setCopyStatus("success")
       })
       .catch(err => {
         console.error("Failed to copy: ", err)
-        toast.error("Impossible de copier le lien")
+        setCopyStatus("error")
       })
+  }
+
+  // Handle copying text
+  const handleCopyText = () => {
+    navigator.clipboard
+      .writeText("Résultat en texte")
+      .then(() => {
+        setCopyStatus("success")
+      })
+      .catch(err => {
+        console.error("Failed to copy: ", err)
+        setCopyStatus("error")
+      })
+  }
+
+  // Get button properties based on status
+  const getButtonProps = () => {
+    switch (copyStatus) {
+      case "success":
+        return {
+          variant: "ghost" as const,
+          icon: <Check className="h-4 w-4 text-green-600" />,
+          className: "",
+        }
+      case "error":
+        return {
+          variant: "destructive" as const,
+          icon: <X className="h-4 w-4" />,
+          className: "",
+        }
+      default:
+        return {
+          variant: "ghost" as const,
+          icon: <Copy className="h-4 w-4" />,
+          className: "",
+        }
+    }
   }
 
   // Handle returning home
@@ -124,15 +174,36 @@ function ResultContent() {
             Résultat du scrutin
           </h1>
           <div className="flex flex-col items-center gap-4 md:flex-row">
-            <div className="w-[195px] text-center">
-              <Button
-                onClick={handleCopyLink}
-                variant="ghost"
-                className="w-full"
-                disabled={isLoading}>
-                {copyButtonText}
-              </Button>
-            </div>
+            <TooltipProvider>
+              <Tooltip delayDuration={0}>
+                <TooltipTrigger asChild>
+                  <div>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          variant={getButtonProps().variant}
+                          size="icon"
+                          disabled={isLoading}
+                          className={`h-10 w-10 ${getButtonProps().className}`}>
+                          {getButtonProps().icon}
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={handleCopyLink}>
+                          <Link2 className="mr-2 h-4 w-4" />
+                          Copier le lien
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={handleCopyText}>
+                          <Text className="mr-2 h-4 w-4" />
+                          Copier le texte
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent side="bottom">Copier</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
             <TooltipProvider>
               <Tooltip delayDuration={0}>
                 <TooltipTrigger asChild>

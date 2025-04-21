@@ -181,7 +181,9 @@ function ResultContent() {
           </h1>
           <div className="flex flex-col items-center gap-4 md:flex-row">
             <DropdownMenu>
-              <DropdownMenuTrigger asChild>
+              <DropdownMenuTrigger
+                asChild
+                className={`${copyStatus === "success" ? "focus-visible:ring-0 focus-visible:ring-offset-0" : ""}`}>
                 <Button
                   variant={getButtonProps().variant}
                   disabled={isLoading}

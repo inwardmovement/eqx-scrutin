@@ -389,18 +389,5 @@ function ResultContent() {
 }
 
 export default function ResultPage() {
-  return (
-    <Suspense
-      fallback={
-        <main className="flex min-h-screen flex-col items-center justify-center p-4">
-          <Card className="w-full max-w-6xl">
-            <CardContent className="flex min-h-[50vh] items-center justify-center">
-              <Spinner className="size-12" />
-            </CardContent>
-          </Card>
-        </main>
-      }>
-      <ResultContent />
-    </Suspense>
-  )
+  return <ResultContent />
 }

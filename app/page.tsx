@@ -1,4 +1,5 @@
 "use client"
+
 import Image from "next/image"
 import { useState, useEffect, useLayoutEffect, Suspense } from "react"
 import { useRouter, useSearchParams } from "next/navigation"

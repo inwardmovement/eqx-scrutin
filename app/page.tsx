@@ -83,11 +83,11 @@ function HomeContent() {
   }, [])
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center p-4">
+    <main className="flex flex-col items-center mt-16 p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="flex flex-col items-center">
           <Image
-            src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/LOGO_EQUINOXE_JAUNE-300x141.png-dQx5qJhppS2T2s3JctMaUuCNlyYAEA.webp"
+            src="/logo-equinoxe.webp"
             alt="Logo Equinoxe"
             width={200}
             height={94}
@@ -133,7 +133,7 @@ function HomeContent() {
                         </p>
                         <div className="bg-gray-100 dark:bg-gray-700 dark:group-hover:bg-gray-800 p-3 rounded-md w-full mt-2 mb-2 overflow-auto">
                           <pre className="text-xs">
-                            <code>
+                            <code className="text-xs">
                               Choix A,Choix B,Choix C,...{"\n"}
                               Bien,Passable,Excellent,...{"\n"}
                               Très bien,Bien,À rejeter,...{"\n"}

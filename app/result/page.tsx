@@ -25,6 +25,7 @@ import {
 } from "recharts"
 import { toast } from "sonner"
 import { Spinner } from "@/components/ui/spinner"
+import { Skeleton } from "@/components/ui/skeleton"
 
 type Distribution = {
   [choice: string]: {
@@ -130,15 +131,91 @@ function ResultContent() {
     router.push("/")
   }
 
-  // Si les données sont en cours de chargement, afficher le spinner
+  // Si les données sont en cours de chargement, afficher les skeletons
   if (isLoading) {
     return (
-      <main className="flex min-h-screen flex-col items-center justify-center p-4">
-        <Card className="w-full max-w-6xl">
-          <CardContent className="flex items-center justify-center min-h-[50vh]">
-            <Spinner className="size-12" />
-          </CardContent>
-        </Card>
+      <main className="flex min-h-screen flex-col p-4 md:p-8">
+        <div className="container mx-auto max-w-6xl">
+          <div className="flex flex-col md:flex-row justify-between items-center mb-6">
+            <h1 className="text-3xl font-bold mb-4 md:mb-0">
+              Résultat du scrutin
+            </h1>
+            <div className="flex flex-col md:flex-row items-center gap-4">
+              <div className="w-[195px] text-center">
+                <Button variant="ghost" className="w-full" disabled>
+                  Copier le lien du résultat
+                </Button>
+              </div>
+              <Button className="md:mr-3" variant="ghost" disabled>
+                Nouveau scrutin
+              </Button>
+              <Image
+                src="/logo-equinoxe.webp"
+                alt="Logo Equinoxe"
+                width={150}
+                height={70}
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            <Card>
+              <CardHeader>
+                <CardTitle>Gagnant</CardTitle>
+                <CardDescription>
+                  Le choix qui a remporté le scrutin
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center justify-center h-32">
+                  <div className="text-center space-y-4">
+                    <Skeleton className="h-8 w-32 mx-auto" />
+                    <Skeleton className="h-4 w-48" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Distribution des votes</CardTitle>
+                <CardDescription>
+                  Répartition des évaluations par choix (en pourcentage)
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="h-80">
+                  <Skeleton className="w-full h-full" />
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Informations supplémentaires</CardTitle>
+              <CardDescription>
+                Détail du départage des égalités avec la méthode du{" "}
+                <Link
+                  href="https://fr.wikipedia.org/wiki/Jugement_usuel"
+                  target="_blank"
+                  className="text-blue-600 hover:underline">
+                  Jugement usuel
+                </Link>
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <dl className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {[1, 2, 3].map((_, index) => (
+                  <div key={index} className="border rounded-lg p-4 space-y-2">
+                    <Skeleton className="h-4 w-24" />
+                    <Skeleton className="h-4 w-full" />
+                  </div>
+                ))}
+              </dl>
+            </CardContent>
+          </Card>
+        </div>
       </main>
     )
   }
@@ -191,7 +268,7 @@ function ResultContent() {
               Nouveau scrutin
             </Button>
             <Image
-              src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/LOGO_EQUINOXE_JAUNE-300x141.png-dQx5qJhppS2T2s3JctMaUuCNlyYAEA.webp"
+              src="/logo-equinoxe.webp"
               alt="Logo Equinoxe"
               width={150}
               height={70}

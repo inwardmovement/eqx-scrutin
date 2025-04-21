@@ -20,7 +20,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="fr" suppressHydrationWarning>
-      <body className={inter.className}>
+      <body className={`cursor-default ${inter.className}`}>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"

@@ -187,7 +187,7 @@ function ResultContent() {
                 <Button
                   variant={getButtonProps().variant}
                   disabled={isLoading}
-                  className={`${getButtonProps().className}`}>
+                  className={`${getButtonProps().className} gap-1`}>
                   {getButtonProps().icon}
                   <span
                     className={`ml-2 ${copyStatus === "success" ? "text-green-600" : ""}`}>
@@ -196,11 +196,11 @@ function ResultContent() {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={handleCopyLink}>
+                <DropdownMenuItem onClick={handleCopyLink} className="gap-1">
                   <Link2 className="mr-2 h-4 w-4" />
                   Copier le lien
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={handleCopyText}>
+                <DropdownMenuItem onClick={handleCopyText} className="gap-1">
                   <Text className="mr-2 h-4 w-4" />
                   Copier le texte
                 </DropdownMenuItem>
@@ -210,9 +210,9 @@ function ResultContent() {
               onClick={handleReturnHome}
               variant="ghost"
               disabled={isLoading}
-              className="md:mr-3">
+              className="gap-1 md:mr-3">
               <Newspaper className="mr-2 h-4 w-4" />
-              Nouveau scrutin
+              Nouveau
             </Button>
             <Image src={Logo} alt="Logo Equinoxe" width={150} height={70} />
           </div>

@@ -19,7 +19,7 @@ import {
   XAxis,
   YAxis,
   CartesianGrid,
-  Tooltip,
+  Tooltip as TooltipChart,
   Legend,
   ResponsiveContainer,
 } from "recharts"
@@ -27,6 +27,13 @@ import { toast } from "sonner"
 import { Spinner } from "@/components/ui/spinner"
 import { Skeleton } from "@/components/ui/skeleton"
 import Logo from "@/public/logo-eqx.webp"
+import {
+  TooltipProvider,
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+} from "@/components/ui/tooltip"
+import { Newspaper } from "lucide-react"
 
 type Distribution = {
   [choice: string]: {
@@ -126,13 +133,21 @@ function ResultContent() {
                 {copyButtonText}
               </Button>
             </div>
-            <Button
-              className="md:mr-3"
-              onClick={handleReturnHome}
-              variant="ghost"
-              disabled={isLoading}>
-              Nouveau scrutin
-            </Button>
+            <TooltipProvider>
+              <Tooltip delayDuration={0}>
+                <TooltipTrigger asChild>
+                  <Button
+                    onClick={handleReturnHome}
+                    variant="ghost"
+                    size="icon"
+                    disabled={isLoading}
+                    className="md:mr-3">
+                    <Newspaper className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="bottom">Nouveau scrutin</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
             <Image src={Logo} alt="Logo Equinoxe" width={150} height={70} />
           </div>
         </div>
@@ -339,7 +354,7 @@ function ResultDisplay({ data }: { data: ResultData }) {
                     ticks={[0, 0.25, 0.5, 0.75, 1]}
                   />
                   <YAxis dataKey="name" type="category" />
-                  <Tooltip
+                  <TooltipChart
                     content={<CustomTooltip />}
                     cursor={{ fill: "currentColor", opacity: 0.1 }}
                   />

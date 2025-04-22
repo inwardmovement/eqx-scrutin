@@ -382,7 +382,7 @@ function ResultDisplay({ data }: { data: ResultData }) {
                           }}>
                           {choice.mention}
                         </span>{" "}
-                        · Score : {choice.score}
+                        ({choice.score})
                       </p>
                     </div>
                   </div>

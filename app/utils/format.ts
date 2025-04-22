@@ -30,9 +30,9 @@ type ScrutinData = {
   distribution: {
     [choice: string]: Choice
   }
-  winner?: string
-  winningMention?: string
-  details?: { [key: string]: string }
+  winner: string
+  winningMention: string
+  details: { [key: string]: string }
 }
 
 // Convertit les données du scrutin en format URL
@@ -60,9 +60,6 @@ export function formatDataForUrl(data: ScrutinData): string {
 // Parse les données de l'URL vers le format d'origine
 export function parseUrlData(urlData: string): ScrutinData {
   const distribution: { [choice: string]: Choice } = {}
-  let bestScore = -Infinity
-  let winner = ""
-  let winningMention = ""
 
   const choices = urlData.split("_")
   for (const choice of choices) {
@@ -91,14 +88,6 @@ export function parseUrlData(urlData: string): ScrutinData {
     }
 
     const mention = MENTION_FULL[mentionShortcut]
-    const scoreNum = parseFloat(score)
-
-    // Met à jour le gagnant si nécessaire
-    if (scoreNum > bestScore) {
-      bestScore = scoreNum
-      winner = name
-      winningMention = mention
-    }
 
     distribution[name] = {
       mention,
@@ -107,14 +96,27 @@ export function parseUrlData(urlData: string): ScrutinData {
     }
   }
 
-  // Calcule le nombre total de votants
-  const totalVotes = Object.values(distribution).reduce((total, choice) => {
-    const choiceTotal = Object.values(choice.distribution).reduce(
-      (sum, count) => sum + count,
-      0,
-    )
-    return Math.max(total, choiceTotal)
-  }, 0)
+  // Récupérer le gagnant (celui avec le meilleur score)
+  let bestScore = -Infinity
+  let winner = ""
+  let winningMention = ""
+
+  Object.entries(distribution).forEach(([name, choice]) => {
+    const scoreNum = parseFloat(choice.score)
+    if (scoreNum > bestScore) {
+      bestScore = scoreNum
+      winner = name
+      winningMention = choice.mention
+    }
+  })
+
+  // Calculer le nombre de votants à partir du premier choix
+  const totalVotes = Object.values(distribution)[0]?.distribution
+    ? Object.values(Object.values(distribution)[0].distribution).reduce(
+        (a, b) => a + b,
+        0,
+      )
+    : 0
 
   return {
     distribution,

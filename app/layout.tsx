@@ -8,8 +8,8 @@ import { TooltipProvider } from "@/components/ui/tooltip"
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "Scrutin - Analyse de votes",
-  description: "Application d'analyse de scrutin et de votes",
+  title: "Scrutin au jugement médian",
+  description: "Analyse des votes selon la méthode du jugement médian",
   generator: "Next.js",
 }
 

@@ -39,6 +39,7 @@ import {
   X,
   EllipsisVertical,
 } from "lucide-react"
+import { parseUrlData } from "../utils/format"
 
 type Distribution = {
   [choice: string]: {
@@ -47,10 +48,18 @@ type Distribution = {
 }
 
 type ResultData = {
-  distribution: Distribution
-  winner: string
-  winningMention: string
-  details: { [key: string]: string }
+  distribution: {
+    [choice: string]: {
+      mention: string
+      score: string
+      distribution: {
+        [mention: string]: number
+      }
+    }
+  }
+  winner?: string
+  winningMention?: string
+  details?: { [key: string]: string }
 }
 
 // Ordre des mentions
@@ -76,7 +85,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
     const choice = label
     const distribution =
-      payload[0]?.payload?.originalDistribution?.[choice] || {}
+      payload[0]?.payload?.originalDistribution?.[choice]?.distribution || {}
 
     return (
       <div className="rounded border bg-background p-3 shadow-lg">
@@ -84,9 +93,10 @@ const CustomTooltip = ({ active, payload, label }: any) => {
         {payload.map((entry: any, index: number) => {
           const rating = entry.name
           const votes = distribution[rating] || 0
+          const percentage = entry.value
           return (
             <p key={`item-${index}`} style={{ color: entry.color }}>
-              {`${rating}: ${entry.value.toFixed(1)}% (${votes})`}
+              {`${rating}: ${percentage.toFixed(1)}% (${votes})`}
             </p>
           )
         })}
@@ -245,19 +255,15 @@ function ResultData({
   const router = useRouter()
 
   useEffect(() => {
-    const encodedData = searchParams.get("data")
-    if (!encodedData) {
+    const urlData = searchParams.get("data")
+    if (!urlData) {
       router.replace("/?error=no_result")
       return
     }
 
     try {
-      const decodedData = JSON.parse(decodeURIComponent(encodedData))
-      if (!decodedData) {
-        router.replace("/?error=invalid_data")
-        return
-      }
-      setData(decodedData)
+      const data = parseUrlData(urlData)
+      setData(data)
     } catch (error) {
       console.error("Error parsing data from URL:", error)
       router.replace("/?error=invalid_data")
@@ -275,17 +281,25 @@ function LoadingContent() {
       <div className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>Gagnant</CardTitle>
-            <CardDescription>
-              Le choix qui a remporté le scrutin
-            </CardDescription>
+            <CardTitle>Classement</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="flex h-32 items-center justify-center">
-              <div className="space-y-4 text-center">
-                <Skeleton className="mx-auto h-8 w-32" />
-                <Skeleton className="h-4 w-48" />
-              </div>
+            <div className="flex flex-col gap-4">
+              {[1, 2, 3].map((_, index) => (
+                <div
+                  key={index}
+                  className={`flex flex-col rounded-lg border p-4 ${
+                    index === 0 ? "border-[#ffd412] bg-[#ffd412]/10" : ""
+                  }`}>
+                  <div className="flex items-center gap-3">
+                    <Skeleton className="h-8 w-8" />
+                    <div className="flex-1">
+                      <Skeleton className="mb-2 h-6 w-32" />
+                      <Skeleton className="h-4 w-48" />
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
           </CardContent>
         </Card>
@@ -293,9 +307,6 @@ function LoadingContent() {
         <Card>
           <CardHeader>
             <CardTitle>Distribution des votes</CardTitle>
-            <CardDescription>
-              Répartition des évaluations par choix (en pourcentage)
-            </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="h-80">
@@ -304,44 +315,27 @@ function LoadingContent() {
           </CardContent>
         </Card>
       </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Informations supplémentaires</CardTitle>
-          <CardDescription>
-            Détail du départage des égalités avec la méthode du{" "}
-            <Link
-              href="https://fr.wikipedia.org/wiki/Jugement_usuel"
-              target="_blank"
-              className="text-blue-600 hover:underline">
-              Jugement usuel
-            </Link>
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <dl className="grid grid-cols-1 gap-4 md:grid-cols-3">
-            {[1, 2, 3].map((_, index) => (
-              <div key={index} className="space-y-2 rounded-lg border p-4">
-                <Skeleton className="h-4 w-24" />
-                <Skeleton className="h-4 w-full" />
-              </div>
-            ))}
-          </dl>
-        </CardContent>
-      </Card>
     </>
   )
 }
 
 function ResultDisplay({ data }: { data: ResultData }) {
+  // Trier les choix par score
+  const sortedChoices = Object.entries(data.distribution)
+    .map(([name, data]) => ({
+      name,
+      ...data,
+    }))
+    .sort((a, b) => parseFloat(b.score) - parseFloat(a.score))
+
   // Transform the distribution data for the stacked bar chart
   // and calculate percentages
-  const chartData = Object.keys(data.distribution).map(choice => {
-    const result: { [key: string]: any } = { name: choice }
+  const chartData = sortedChoices.map(choice => {
+    const result: { [key: string]: any } = { name: choice.name }
 
     // Calculate total votes for this choice
-    const totalVotes = Object.values(data.distribution[choice]).reduce(
-      (sum: number, count: number) => sum + count,
+    const totalVotes = Object.values(choice.distribution).reduce(
+      (sum, count) => sum + count,
       0,
     )
 
@@ -350,7 +344,7 @@ function ResultDisplay({ data }: { data: ResultData }) {
 
     // Add each rating value to the result as a percentage
     ratingOrder.forEach(rating => {
-      const count = data.distribution[choice][rating] || 0
+      const count = choice.distribution[rating] || 0
       result[rating] = totalVotes > 0 ? (count / totalVotes) * 100 : 0
     })
 
@@ -362,31 +356,40 @@ function ResultDisplay({ data }: { data: ResultData }) {
       <div className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>Gagnant</CardTitle>
-            <CardDescription>
-              Le choix qui a remporté le scrutin
-            </CardDescription>
+            <CardTitle>Classement</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="flex h-32 items-center justify-center">
-              <div className="text-center">
-                <Badge className="bg-[#ffd412] px-3 py-1 text-lg text-black hover:bg-[#e6c010]">
-                  {data.winner}
-                </Badge>
-                <p className="mt-2 text-sm text-gray-500">
-                  a remporté le scrutin avec la mention{" "}
-                  <span
-                    className="font-semibold"
-                    style={{
-                      color:
-                        ratingColors[
-                          data.winningMention as keyof typeof ratingColors
-                        ],
-                    }}>
-                    {data.winningMention}
-                  </span>
-                </p>
-              </div>
+            <div className="flex flex-col gap-4">
+              {sortedChoices.map((choice, index) => (
+                <div
+                  key={choice.name}
+                  className={`flex flex-col rounded-lg border p-4 ${
+                    index === 0 ? "border-[#ffd412] bg-[#ffd412]/10" : ""
+                  }`}>
+                  <div className="flex items-center gap-3">
+                    <span className="text-xl font-bold text-muted-foreground">
+                      #{index + 1}
+                    </span>
+                    <div className="flex-1">
+                      <h3 className="text-lg font-semibold">{choice.name}</h3>
+                      <p className="text-sm text-muted-foreground">
+                        Mention{" "}
+                        <span
+                          className="font-medium"
+                          style={{
+                            color:
+                              ratingColors[
+                                choice.mention as keyof typeof ratingColors
+                              ],
+                          }}>
+                          {choice.mention}
+                        </span>{" "}
+                        · Score : {choice.score}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
           </CardContent>
         </Card>
@@ -394,9 +397,6 @@ function ResultDisplay({ data }: { data: ResultData }) {
         <Card>
           <CardHeader>
             <CardTitle>Distribution des votes</CardTitle>
-            <CardDescription>
-              Répartition des évaluations par choix (en pourcentage)
-            </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="h-80">
@@ -445,31 +445,6 @@ function ResultDisplay({ data }: { data: ResultData }) {
           </CardContent>
         </Card>
       </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Informations supplémentaires</CardTitle>
-          <CardDescription>
-            Détail du départage des égalités avec la méthode du{" "}
-            <Link
-              href="https://fr.wikipedia.org/wiki/Jugement_usuel"
-              target="_blank"
-              className="text-blue-600 hover:underline">
-              Jugement usuel
-            </Link>
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <dl className="grid grid-cols-1 gap-4 md:grid-cols-3">
-            {Object.entries(data.details).map(([key, value]) => (
-              <div key={key} className="rounded-lg border p-4">
-                <dt className="font-medium text-gray-700">{key}</dt>
-                <dd className="mt-1 text-gray-500">{String(value)}</dd>
-              </div>
-            ))}
-          </dl>
-        </CardContent>
-      </Card>
     </>
   )
 }

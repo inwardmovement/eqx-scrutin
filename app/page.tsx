@@ -15,6 +15,7 @@ import { Spinner } from "@/components/ui/spinner"
 import Logo from "@/public/logo-eqx.webp"
 import { processDocument } from "./actions"
 import Link from "next/link"
+import { formatDataForUrl } from "./utils/format"
 
 // Composant séparé pour gérer les paramètres d'URL
 function ErrorHandler() {
@@ -49,7 +50,7 @@ function HomeContent() {
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
 
-  // Automatically submit the form when a file is selected
+  // Soumettre le formulaire quand le fichier est collecté
   useEffect(() => {
     if (file && !isLoading) {
       handleSubmit()
@@ -67,12 +68,12 @@ function HomeContent() {
 
       const result = await processDocument(formData)
 
-      if (result.success) {
-        // Encode the data to pass in URL
-        const encodedData = encodeURIComponent(JSON.stringify(result.data))
+      if (result.success && result.data) {
+        // Encode les données pour l'URL dans le nouveau format
+        const urlData = formatDataForUrl(result.data)
 
-        // Redirect to the results page with data
-        router.push(`/result?data=${encodedData}`)
+        // Rediriger vers la page du résultat en transmettant les données
+        router.push(`/result?data=${urlData}`)
       } else {
         console.error("Error processing file")
         toast.error("Erreur lors du traitement du fichier")

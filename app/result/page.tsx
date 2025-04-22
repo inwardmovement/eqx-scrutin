@@ -38,6 +38,7 @@ import {
   Check,
   X,
   EllipsisVertical,
+  Sparkles,
 } from "lucide-react"
 import { parseUrlData } from "../utils/format"
 
@@ -385,6 +386,11 @@ function ResultDisplay({ data }: { data: ResultData }) {
                         ({choice.score})
                       </p>
                     </div>
+                    {index === 0 ? (
+                      <Sparkles className="text-[#ffd412]/75" />
+                    ) : (
+                      ""
+                    )}
                   </div>
                 </div>
               ))}

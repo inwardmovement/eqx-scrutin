@@ -121,23 +121,43 @@ export async function processDocument(formData: FormData) {
       let winningMention = ""
 
       choices.forEach(choice => {
-        // Generate random score between 0 and 5 with 2 decimal places
-        const score = (Math.random() * 5).toFixed(2)
-        const scoreNum = parseFloat(score)
+        // Calculer le nombre total de votes pour ce choix
+        const totalVotes = Object.values(mentionCounts[choice]).reduce(
+          (a, b) => a + b,
+          0,
+        )
 
-        // Determine the majority mention
+        // Déterminer la mention majoritaire
         const dominantMention = findMajorityMention(mentionCounts[choice])
+        const dominantMentionIndex = mentionOrder.indexOf(dominantMention)
 
-        // Update winner if this score is higher
-        if (scoreNum > bestScore) {
-          bestScore = scoreNum
+        // Calculer Pc (partisans) - somme des votes strictement supérieurs à la mention majoritaire
+        let partisans = 0
+        for (let i = dominantMentionIndex + 1; i < mentionOrder.length; i++) {
+          partisans += mentionCounts[choice][mentionOrder[i]]
+        }
+        const Pc = partisans / totalVotes
+
+        // Calculer Oc (opposants) - somme des votes strictement inférieurs à la mention majoritaire
+        let opposants = 0
+        for (let i = 0; i < dominantMentionIndex; i++) {
+          opposants += mentionCounts[choice][mentionOrder[i]]
+        }
+        const Oc = opposants / totalVotes
+
+        // Calculer le score selon la formule : Mc + 0.5 * ((Pc - Oc)/(1 - Pc - Oc))
+        const score = dominantMentionIndex + 0.5 * ((Pc - Oc) / (1 - Pc - Oc))
+
+        // Mettre à jour le gagnant si ce score est plus élevé
+        if (score > bestScore) {
+          bestScore = score
           winner = choice
           winningMention = dominantMention
         }
 
         distribution[choice] = {
           mention: dominantMention,
-          score: score,
+          score: score.toFixed(2),
           distribution: mentionCounts[choice],
         }
       })

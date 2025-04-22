@@ -181,22 +181,30 @@ function ResultContent() {
                 className={`${copyStatus === "success" ? "focus-visible:ring-0 focus-visible:ring-offset-0" : ""} rounded-full`}>
                 <Button
                   variant={getButtonProps().variant}
-                  disabled={isLoading}
                   className={`${getButtonProps().className}`}
                   size="icon">
                   {getButtonProps().icon}
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={handleCopyLink} className="gap-2">
+                <DropdownMenuItem
+                  onClick={handleCopyLink}
+                  className="gap-2"
+                  disabled={isLoading}>
                   <Link2 />
                   Copier le lien
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={handleCopyText} className="gap-2">
+                <DropdownMenuItem
+                  onClick={handleCopyText}
+                  className="gap-2"
+                  disabled={isLoading}>
                   <Text />
                   Copier le texte
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={handleReturnHome} className="gap-2">
+                <DropdownMenuItem
+                  onClick={handleReturnHome}
+                  className="gap-2"
+                  disabled={isLoading}>
                   <ChartLine />
                   Nouveau scrutin
                 </DropdownMenuItem>

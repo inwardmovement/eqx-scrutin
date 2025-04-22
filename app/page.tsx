@@ -174,7 +174,6 @@ function HomeContent() {
               Mentions possibles : <em>Excellent</em>, <em>Bien</em>,{" "}
               <em>Passable</em>, <em>Insuffisant</em>, <em>À rejeter</em>
             </li>
-            <li>10 choix maximum</li>
             <li>
               Résultat calculé au{" "}
               <Link

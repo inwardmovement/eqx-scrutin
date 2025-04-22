@@ -34,7 +34,7 @@ import {
 import {
   Link2,
   Text,
-  ChartLine,
+  Plus,
   Check,
   X,
   EllipsisVertical,
@@ -216,7 +216,7 @@ function ResultContent() {
                   onClick={handleReturnHome}
                   className="gap-2"
                   disabled={isLoading}>
-                  <ChartLine />
+                  <Plus />
                   Nouveau scrutin
                 </DropdownMenuItem>
               </DropdownMenuContent>

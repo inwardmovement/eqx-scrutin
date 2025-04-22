@@ -94,7 +94,7 @@ function HomeContent() {
   }, [])
 
   return (
-    <main className="mt-16 flex flex-col items-center p-4">
+    <main className="flex flex-col items-center p-4 md:mt-8">
       <Card className="w-full max-w-md">
         <CardHeader className="flex flex-col items-center">
           <Image

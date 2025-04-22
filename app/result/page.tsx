@@ -421,8 +421,13 @@ function ResultDisplay({ data }: { data: ResultData }) {
                     tickFormatter={value => `${(value * 100).toFixed(0)}%`}
                     domain={[0, 1]}
                     ticks={[0, 0.25, 0.5, 0.75, 1]}
+                    tick={{ fill: "#a3a3a3" }}
                   />
-                  <YAxis dataKey="name" type="category" />
+                  <YAxis
+                    dataKey="name"
+                    type="category"
+                    tick={{ fill: "#a3a3a3" }}
+                  />
                   <TooltipChart
                     content={<CustomTooltip />}
                     cursor={{ fill: "currentColor", opacity: 0.1 }}

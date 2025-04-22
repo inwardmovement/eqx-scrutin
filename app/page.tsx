@@ -181,7 +181,7 @@ function HomeContent() {
                 href="https://fr.wikipedia.org/wiki/Jugement_usuel"
                 target="_blank"
                 className="text-blue-600 hover:underline">
-                Jugement usuel
+                Jugement médian
               </Link>
             </li>
           </ul>

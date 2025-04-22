@@ -47,7 +47,7 @@ export async function processDocument(formData: FormData) {
         }
       })
 
-      // Ordre des mentions pour calculer la médiane
+      // Ordre des mentions du plus faible au plus fort
       const mentionOrder = [
         "À rejeter",
         "Insuffisant",
@@ -56,25 +56,49 @@ export async function processDocument(formData: FormData) {
         "Excellent",
       ]
 
-      // Fonction pour trouver la mention médiane
-      function findMedianMention(distribution: {
+      // Fonction pour trouver la mention majoritaire selon la définition du jugement majoritaire
+      function findMajorityMention(distribution: {
         [key: string]: number
       }): string {
         const totalVotes = Object.values(distribution).reduce(
           (a, b) => a + b,
           0,
         )
-        const medianPosition = Math.ceil(totalVotes / 2)
-        let cumSum = 0
 
+        // Position de la mention majoritaire selon le nombre de votants
+        const majorityPosition =
+          totalVotes % 2 === 0 ? totalVotes / 2 : Math.floor(totalVotes / 2) + 1
+
+        // Pour chaque mention possible
         for (const mention of mentionOrder) {
-          cumSum += distribution[mention]
-          if (cumSum >= medianPosition) {
+          // Compter les votes pour les mentions supérieures ou égales
+          let votesSupOrEqual = 0
+          let votesInfOrEqual = 0
+
+          for (const m of mentionOrder) {
+            const index = mentionOrder.indexOf(m)
+            const currentIndex = mentionOrder.indexOf(mention)
+
+            if (index >= currentIndex) {
+              votesSupOrEqual += distribution[m]
+            }
+            if (index <= currentIndex) {
+              votesInfOrEqual += distribution[m]
+            }
+          }
+
+          // Vérifier les conditions de la mention majoritaire :
+          // 1. Majorité absolue contre toute mention inférieure (> 50%)
+          // 2. Majorité absolue ou égalité contre toute mention supérieure (>= 50%)
+          if (
+            votesSupOrEqual > totalVotes / 2 &&
+            votesInfOrEqual >= totalVotes / 2
+          ) {
             return mention
           }
         }
 
-        return "Passable" // Fallback si pas de votes
+        return "Passable" // Fallback si aucune mention ne satisfait les conditions
       }
 
       // Count mentions for each choice
@@ -101,8 +125,8 @@ export async function processDocument(formData: FormData) {
         const score = (Math.random() * 5).toFixed(2)
         const scoreNum = parseFloat(score)
 
-        // Determine the median mention
-        const dominantMention = findMedianMention(mentionCounts[choice])
+        // Determine the majority mention
+        const dominantMention = findMajorityMention(mentionCounts[choice])
 
         // Update winner if this score is higher
         if (scoreNum > bestScore) {

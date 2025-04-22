@@ -74,9 +74,9 @@ const ratingOrder = [
 // Couleurs des mentions
 const ratingColors = {
   Excellent: "#84cc16", // lime-500
-  Bien: "#047857", // emerald-700
+  Bien: "#059169", // emerald-700 avec contraste amélioré
   Passable: "#fb923c", // orange-400
-  Insuffisant: "#e11d48", // rose-600
+  Insuffisant: "#f6204f", // rose-600 avec contraste amélioré
   "À rejeter": "#ffffff", // white
 }
 
@@ -288,9 +288,7 @@ function LoadingContent() {
               {[1, 2, 3].map((_, index) => (
                 <div
                   key={index}
-                  className={`flex flex-col rounded-lg border p-4 ${
-                    index === 0 ? "border-[#ffd412] bg-[#ffd412]/10" : ""
-                  }`}>
+                  className={`flex flex-col rounded-lg border p-4`}>
                   <div className="flex items-center gap-3">
                     <Skeleton className="h-8 w-8" />
                     <div className="flex-1">
@@ -364,7 +362,7 @@ function ResultDisplay({ data }: { data: ResultData }) {
                 <div
                   key={choice.name}
                   className={`flex flex-col rounded-lg border p-4 ${
-                    index === 0 ? "border-[#ffd412] bg-[#ffd412]/10" : ""
+                    index === 0 ? "border-[#ffd412]/75 bg-[#ffd412]/5" : ""
                   }`}>
                   <div className="flex items-center gap-3">
                     <span className="text-xl font-bold text-muted-foreground">

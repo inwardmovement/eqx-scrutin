@@ -83,11 +83,11 @@ const ratingOrder = [
 
 // Couleurs des mentions
 const ratingColors = {
-  Excellent: "#84cc16", // lime-500
-  Bien: "#059169", // emerald-700 avec contraste amélioré
-  Passable: "#fb923c", // orange-400
-  Insuffisant: "#f6204f", // rose-600 avec contraste amélioré
-  "À rejeter": "#ffffff", // white
+  Excellent: "#059169", // emerald-700 avec contraste amélioré
+  Bien: "#84cc16", // lime-500
+  Passable: "#ffffff", // white
+  Insuffisant: "#fb923c", // orange-400
+  "À rejeter": "#f6204f", // rose-600 avec contraste amélioré
 }
 
 // Tooltip pourcentages
@@ -286,7 +286,7 @@ function ResultContent() {
             <ResultDisplay data={data} />
           ) : null}
           <div className="flex flex-row items-center gap-2 space-y-0 text-xs text-muted-foreground">
-            <Info className="size-5" />
+            {/* <Info className="size-5" /> */}
             <div>
               Résultat calculé au{" "}
               <Link

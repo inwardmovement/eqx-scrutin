@@ -600,6 +600,8 @@ function ResultDisplay({ data }: { data: ResultData }) {
                     dataKey="name"
                     type="category"
                     tick={{ fill: "#a3a3a3" }}
+                    tickFormatter={(value, index) => `#${index + 1}`}
+                    interval={0}
                   />
                   <TooltipChart
                     content={<CustomTooltip />}

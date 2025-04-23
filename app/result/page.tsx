@@ -83,11 +83,11 @@ const ratingOrder = [
 
 // Couleurs des mentions
 const ratingColors = {
-  Excellent: "#059169", // emerald-700 avec contraste amélioré
-  Bien: "#84cc16", // lime-500
+  Excellent: "#16a34a", // green-600
+  Bien: "#4ade80", // green-400
   Passable: "#d1d5db", // gray-300
-  Insuffisant: "#fb923c", // orange-400
-  "À rejeter": "#f6204f", // rose-600 avec contraste amélioré
+  Insuffisant: "#f87171", // red-400
+  "À rejeter": "#eb2929", // red-600 avec contraste amélioré
 }
 
 // Tooltip pourcentages

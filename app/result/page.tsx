@@ -285,21 +285,18 @@ function ResultContent() {
           ) : data ? (
             <ResultDisplay data={data} />
           ) : null}
-
-          <Card>
-            <CardHeader className="flex flex-row items-center gap-2 space-y-0 text-muted-foreground">
-              <Info />
-              <div className="text-xs">
-                Résultat calculé au{" "}
-                <Link
-                  href="https://fr.wikipedia.org/wiki/Jugement_usuel"
-                  target="_blank"
-                  className="text-blue-600 hover:underline">
-                  Jugement médian
-                </Link>
-              </div>
-            </CardHeader>
-          </Card>
+          <div className="flex flex-row items-center gap-2 space-y-0 text-xs text-muted-foreground">
+            <Info className="size-5" />
+            <div>
+              Résultat calculé au{" "}
+              <Link
+                href="https://fr.wikipedia.org/wiki/Jugement_usuel"
+                target="_blank"
+                className="text-blue-600 hover:underline">
+                Jugement médian
+              </Link>
+            </div>
+          </div>
         </div>
       </main>
     </VictoryThresholdContext.Provider>

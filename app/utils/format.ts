@@ -38,8 +38,8 @@ type ScrutinData = {
 // Convertit les données du scrutin en format URL
 export function formatDataForUrl(data: ScrutinData): string {
   const choices = Object.entries(data.distribution).map(([name, choice]) => {
-    // Encode le nom du choix
-    const encodedName = encodeURIComponent(name)
+    // Encode le nom du choix et remplace les %20 par des +
+    const encodedName = encodeURIComponent(name).replace(/%20/g, "+")
 
     // Obtient l'abréviation de la mention majoritaire
     const mentionShortcut = MENTION_SHORTCUTS[choice.mention]
@@ -66,8 +66,8 @@ export function parseUrlData(urlData: string): ScrutinData {
     const [encodedName, mentionShortcut, distributionString, score] =
       choice.split("-")
 
-    // Décode le nom du choix
-    const name = decodeURIComponent(encodedName)
+    // Remplace les + par des espaces avant de décoder
+    const name = decodeURIComponent(encodedName.replace(/\+/g, " "))
 
     // Parse la distribution
     const distributionData: Distribution = {}

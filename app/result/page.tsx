@@ -149,7 +149,9 @@ function ResultContent() {
       const sValue = value === "excellent" ? "1" : value === "bien" ? "2" : "3"
       params.set("s", sValue)
     }
-    router.push(`?${params.toString()}`, { scroll: false })
+    // Utiliser encodeURIComponent avec remplacement des %20 par des +
+    const queryString = params.toString().replace(/%20/g, "+")
+    router.push(`?${queryString}`, { scroll: false })
   }
 
   // Handle copying link

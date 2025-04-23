@@ -130,12 +130,28 @@ function useVictoryThreshold() {
 
 function ResultContent() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [data, setData] = useState<ResultData | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [copyStatus, setCopyStatus] = useState<"idle" | "success" | "error">(
     "idle",
   )
-  const [victoryThreshold, setVictoryThreshold] = useState("meilleur_score")
+  const [victoryThreshold, setVictoryThreshold] = useState(() => {
+    const s = searchParams.get("s")
+    if (s === "1") return "excellent"
+    if (s === "2") return "bien"
+    if (s === "3") return "passable"
+    return "meilleur_score"
+  })
+
+  // Mettre à jour le seuil quand les paramètres d'URL changent
+  useEffect(() => {
+    const s = searchParams.get("s")
+    if (s === "1") setVictoryThreshold("excellent")
+    else if (s === "2") setVictoryThreshold("bien")
+    else if (s === "3") setVictoryThreshold("passable")
+    else setVictoryThreshold("meilleur_score")
+  }, [searchParams])
 
   // Reset copy status after delay
   useEffect(() => {
@@ -595,5 +611,9 @@ function ResultDisplay({ data }: { data: ResultData }) {
 }
 
 export default function ResultPage() {
-  return <ResultContent />
+  return (
+    <Suspense>
+      <ResultContent />
+    </Suspense>
+  )
 }

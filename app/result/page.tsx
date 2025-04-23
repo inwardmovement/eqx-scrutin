@@ -309,7 +309,25 @@ function LoadingContent() {
           </CardHeader>
           <CardContent>
             <div className="h-80">
-              <Skeleton className="h-full w-full" />
+              <div className="flex h-full flex-col">
+                {/* Zone du graphique */}
+                <div className="flex-1 space-y-8 py-8">
+                  {[1, 2, 3].map((_, index) => (
+                    <div key={index} className="flex items-center gap-4">
+                      <Skeleton className="h-6 w-20 text-muted-foreground" />
+                      <div className="flex-1">
+                        <div className="flex h-6">
+                          <Skeleton className="h-full w-[15%] rounded-none bg-muted/50" />
+                          <Skeleton className="h-full w-[20%] rounded-none bg-muted/75" />
+                          <Skeleton className="h-full w-[25%] rounded-none bg-muted/50" />
+                          <Skeleton className="h-full w-[20%] rounded-none bg-muted/75" />
+                          <Skeleton className="h-full w-[20%] rounded-none bg-muted/50" />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           </CardContent>
         </Card>

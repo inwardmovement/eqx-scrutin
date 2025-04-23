@@ -30,6 +30,11 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSub,
+  DropdownMenuSubTrigger,
+  DropdownMenuSubContent,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
 } from "@/components/ui/dropdown-menu"
 import {
   Link2,
@@ -41,6 +46,8 @@ import {
   Sparkles,
 } from "lucide-react"
 import { parseUrlData } from "../utils/format"
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import { Label } from "@/components/ui/label"
 
 type Distribution = {
   [choice: string]: {
@@ -109,11 +116,19 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 
 function ResultContent() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [data, setData] = useState<ResultData | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [copyStatus, setCopyStatus] = useState<"idle" | "success" | "error">(
     "idle",
   )
+  const [victoryThreshold, setVictoryThreshold] = useState(() => {
+    const s = searchParams.get("s")
+    if (s === "1") return "excellent"
+    if (s === "2") return "bien"
+    if (s === "3") return "passable"
+    return "meilleur_score"
+  })
 
   // Reset copy status after delay
   useEffect(() => {
@@ -124,6 +139,18 @@ function ResultContent() {
       return () => clearTimeout(timer)
     }
   }, [copyStatus])
+
+  // Fonction pour mettre à jour l'URL avec le nouveau seuil
+  const updateThresholdInUrl = (value: string) => {
+    const params = new URLSearchParams(searchParams.toString())
+    if (value === "meilleur_score") {
+      params.delete("s")
+    } else {
+      const sValue = value === "excellent" ? "1" : value === "bien" ? "2" : "3"
+      params.set("s", sValue)
+    }
+    router.push(`?${params.toString()}`, { scroll: false })
+  }
 
   // Handle copying link
   const handleCopyLink = () => {
@@ -212,6 +239,52 @@ function ResultContent() {
                   <Text />
                   Copier le texte
                 </DropdownMenuItem>
+                <DropdownMenuSub>
+                  <DropdownMenuSubTrigger className="gap-2">
+                    <Sparkles />
+                    Seuil de victoire
+                  </DropdownMenuSubTrigger>
+                  <DropdownMenuSubContent>
+                    <DropdownMenuRadioGroup value={victoryThreshold}>
+                      <DropdownMenuRadioItem
+                        value="meilleur_score"
+                        onSelect={event => {
+                          event.preventDefault()
+                          setVictoryThreshold("meilleur_score")
+                          updateThresholdInUrl("meilleur_score")
+                        }}>
+                        Meilleur score
+                      </DropdownMenuRadioItem>
+                      <DropdownMenuRadioItem
+                        value="excellent"
+                        onSelect={event => {
+                          event.preventDefault()
+                          setVictoryThreshold("excellent")
+                          updateThresholdInUrl("excellent")
+                        }}>
+                        Excellent
+                      </DropdownMenuRadioItem>
+                      <DropdownMenuRadioItem
+                        value="bien"
+                        onSelect={event => {
+                          event.preventDefault()
+                          setVictoryThreshold("bien")
+                          updateThresholdInUrl("bien")
+                        }}>
+                        Bien
+                      </DropdownMenuRadioItem>
+                      <DropdownMenuRadioItem
+                        value="passable"
+                        onSelect={event => {
+                          event.preventDefault()
+                          setVictoryThreshold("passable")
+                          updateThresholdInUrl("passable")
+                        }}>
+                        Passable
+                      </DropdownMenuRadioItem>
+                    </DropdownMenuRadioGroup>
+                  </DropdownMenuSubContent>
+                </DropdownMenuSub>
                 <DropdownMenuItem
                   onClick={handleReturnHome}
                   className="gap-2"
@@ -238,7 +311,7 @@ function ResultContent() {
         {isLoading ? (
           <LoadingContent />
         ) : data ? (
-          <ResultDisplay data={data} />
+          <ResultDisplay data={data} victoryThreshold={victoryThreshold} />
         ) : null}
       </div>
     </main>
@@ -336,7 +409,13 @@ function LoadingContent() {
   )
 }
 
-function ResultDisplay({ data }: { data: ResultData }) {
+function ResultDisplay({
+  data,
+  victoryThreshold,
+}: {
+  data: ResultData
+  victoryThreshold: string
+}) {
   // Trier les choix par score
   const sortedChoices = Object.entries(data.distribution)
     .map(([name, data]) => ({
@@ -344,6 +423,18 @@ function ResultDisplay({ data }: { data: ResultData }) {
       ...data,
     }))
     .sort((a, b) => parseFloat(b.score) - parseFloat(a.score))
+
+  // Fonction pour déterminer si un choix est gagnant selon le seuil
+  const isWinner = (
+    choice: (typeof sortedChoices)[0],
+    victoryThreshold: string,
+  ) => {
+    if (victoryThreshold === "meilleur_score") {
+      const maxScore = Math.max(...sortedChoices.map(c => parseFloat(c.score)))
+      return parseFloat(choice.score) === maxScore
+    }
+    return choice.mention.toLowerCase() === victoryThreshold
+  }
 
   // Transform the distribution data for the stacked bar chart
   // and calculate percentages
@@ -381,7 +472,9 @@ function ResultDisplay({ data }: { data: ResultData }) {
                 <div
                   key={choice.name}
                   className={`flex flex-col rounded-lg border p-4 ${
-                    index === 0 ? "border-[#ffd412]/75 bg-[#ffd412]/5" : ""
+                    isWinner(choice, victoryThreshold)
+                      ? "border-[#ffd412]/75 bg-[#ffd412]/5"
+                      : ""
                   }`}>
                   <div className="flex items-center gap-3">
                     <span className="text-xl font-bold text-muted-foreground">
@@ -404,11 +497,9 @@ function ResultDisplay({ data }: { data: ResultData }) {
                         ({choice.score})
                       </p>
                     </div>
-                    {index === 0 ? (
+                    {isWinner(choice, victoryThreshold) ? (
                       <Sparkles className="text-[#ffd412]/75" />
-                    ) : (
-                      ""
-                    )}
+                    ) : null}
                   </div>
                 </div>
               ))}

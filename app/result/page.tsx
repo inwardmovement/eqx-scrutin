@@ -86,8 +86,8 @@ const ratingColors = {
   Excellent: "#16a34a", // green-600
   Bien: "#4ade80", // green-400
   Passable: "#d1d5db", // gray-300
-  Insuffisant: "#f87171", // red-400
-  "À rejeter": "#eb2929", // red-600 avec contraste amélioré
+  Insuffisant: "#fb923c", // orange-400
+  "À rejeter": "#ef4444", // red-500
 }
 
 // Tooltip pourcentages

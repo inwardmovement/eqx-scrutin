@@ -433,7 +433,19 @@ function ResultDisplay({
       const maxScore = Math.max(...sortedChoices.map(c => parseFloat(c.score)))
       return parseFloat(choice.score) === maxScore
     }
-    return choice.mention.toLowerCase() === victoryThreshold
+
+    // Convertir le seuil en indice dans l'ordre des mentions
+    const thresholdIndex = ratingOrder.findIndex(
+      mention => mention.toLowerCase() === victoryThreshold,
+    )
+
+    // Convertir la mention du choix en indice
+    const choiceIndex = ratingOrder.findIndex(
+      mention => mention === choice.mention,
+    )
+
+    // Le choix est gagnant si sa mention est meilleure ou égale au seuil
+    return choiceIndex <= thresholdIndex
   }
 
   // Transform the distribution data for the stacked bar chart

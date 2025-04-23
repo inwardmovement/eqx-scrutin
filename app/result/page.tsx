@@ -45,6 +45,7 @@ import {
   X,
   EllipsisVertical,
   Sparkles,
+  Info,
 } from "lucide-react"
 import { parseUrlData } from "../utils/format"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
@@ -284,6 +285,21 @@ function ResultContent() {
           ) : data ? (
             <ResultDisplay data={data} />
           ) : null}
+
+          <Card>
+            <CardHeader className="flex flex-row items-center gap-2 space-y-0 text-muted-foreground">
+              <Info />
+              <div className="text-xs">
+                Résultat calculé au{" "}
+                <Link
+                  href="https://fr.wikipedia.org/wiki/Jugement_usuel"
+                  target="_blank"
+                  className="text-blue-600 hover:underline">
+                  Jugement médian
+                </Link>
+              </div>
+            </CardHeader>
+          </Card>
         </div>
       </main>
     </VictoryThresholdContext.Provider>
@@ -406,7 +422,7 @@ function LoadingContent() {
                   key={index}
                   className={`flex flex-col rounded-lg border p-4`}>
                   <div className="flex items-center gap-3">
-                    <Skeleton className="h-8 w-8" />
+                    <Skeleton className="h-8 w-8 rounded-full" />
                     <div className="flex-1">
                       <Skeleton className="mb-2 h-6 w-32" />
                       <Skeleton className="h-4 w-48" />

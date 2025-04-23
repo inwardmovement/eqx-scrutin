@@ -42,3 +42,4 @@ Follow these rules when you write code:
 - Utilise des client components seulement quand c'est nécessaire, le plus bas possible dans l'arborescence des composants.
 - Quand c'est possible, évite d'utiliser un délai arbitraire pour déclencher une action, base-toi plutôt sur des évènements, ou sur le cycle de vie des composants.
 - Pour gérer le chargement des éléments de l'interface qui fetch des données ou dépendent d'un traitement, utilise Suspense et Skeleton.
+- useSearchParams doit être utilisé dans un composant enveloppé par un Suspense.

@@ -1,6 +1,6 @@
 "use client"
 
-import { Suspense, useState, useEffect } from "react"
+import { Suspense, useState, useEffect, createContext, useContext } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import Image from "next/image"
 import Link from "next/link"
@@ -114,21 +114,28 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   return null
 }
 
+// Créer le contexte pour le seuil de victoire
+const VictoryThresholdContext = createContext<{
+  victoryThreshold: string
+  setVictoryThreshold: (value: string) => void
+}>({
+  victoryThreshold: "meilleur_score",
+  setVictoryThreshold: () => {},
+})
+
+// Hook personnalisé pour utiliser le contexte
+function useVictoryThreshold() {
+  return useContext(VictoryThresholdContext)
+}
+
 function ResultContent() {
   const router = useRouter()
-  const searchParams = useSearchParams()
   const [data, setData] = useState<ResultData | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [copyStatus, setCopyStatus] = useState<"idle" | "success" | "error">(
     "idle",
   )
-  const [victoryThreshold, setVictoryThreshold] = useState(() => {
-    const s = searchParams.get("s")
-    if (s === "1") return "excellent"
-    if (s === "2") return "bien"
-    if (s === "3") return "passable"
-    return "meilleur_score"
-  })
+  const [victoryThreshold, setVictoryThreshold] = useState("meilleur_score")
 
   // Reset copy status after delay
   useEffect(() => {
@@ -139,20 +146,6 @@ function ResultContent() {
       return () => clearTimeout(timer)
     }
   }, [copyStatus])
-
-  // Fonction pour mettre à jour l'URL avec le nouveau seuil
-  const updateThresholdInUrl = (value: string) => {
-    const params = new URLSearchParams(searchParams.toString())
-    if (value === "meilleur_score") {
-      params.delete("s")
-    } else {
-      const sValue = value === "excellent" ? "1" : value === "bien" ? "2" : "3"
-      params.set("s", sValue)
-    }
-    // Utiliser encodeURIComponent avec remplacement des %20 par des +
-    const queryString = params.toString().replace(/%20/g, "+")
-    router.push(`?${queryString}`, { scroll: false })
-  }
 
   // Handle copying link
   const handleCopyLink = () => {
@@ -210,113 +203,142 @@ function ResultContent() {
   }
 
   return (
-    <main className="flex min-h-screen flex-col p-4 md:p-8">
-      <div className="container mx-auto max-w-6xl">
-        <div className="mb-6 flex flex-col items-center justify-between md:flex-row">
-          <div className="flex flex-col items-center md:flex-row md:gap-4">
-            <h1 className="text-3xl font-bold">Résultat du scrutin</h1>
-            <DropdownMenu>
-              <DropdownMenuTrigger
-                asChild
-                className={`${copyStatus === "success" ? "focus-visible:ring-0 focus-visible:ring-offset-0" : ""} rounded-full`}>
-                <Button
-                  variant={getButtonProps().variant}
-                  className={`${getButtonProps().className}`}
-                  size="icon">
-                  {getButtonProps().icon}
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem
-                  onClick={handleCopyLink}
-                  className="gap-2"
-                  disabled={isLoading}>
-                  <Link2 />
-                  Copier le lien
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={handleCopyText}
-                  className="gap-2"
-                  disabled={isLoading}>
-                  <Text />
-                  Copier le texte
-                </DropdownMenuItem>
-                <DropdownMenuSub>
-                  <DropdownMenuSubTrigger className="gap-2">
-                    <Sparkles />
-                    Seuil de victoire
-                  </DropdownMenuSubTrigger>
-                  <DropdownMenuSubContent>
-                    <DropdownMenuRadioGroup value={victoryThreshold}>
-                      <DropdownMenuRadioItem
-                        value="meilleur_score"
-                        onSelect={event => {
-                          event.preventDefault()
-                          setVictoryThreshold("meilleur_score")
-                          updateThresholdInUrl("meilleur_score")
-                        }}>
-                        Meilleur score
-                      </DropdownMenuRadioItem>
-                      <DropdownMenuRadioItem
-                        value="excellent"
-                        onSelect={event => {
-                          event.preventDefault()
-                          setVictoryThreshold("excellent")
-                          updateThresholdInUrl("excellent")
-                        }}>
-                        Excellent
-                      </DropdownMenuRadioItem>
-                      <DropdownMenuRadioItem
-                        value="bien"
-                        onSelect={event => {
-                          event.preventDefault()
-                          setVictoryThreshold("bien")
-                          updateThresholdInUrl("bien")
-                        }}>
-                        Bien
-                      </DropdownMenuRadioItem>
-                      <DropdownMenuRadioItem
-                        value="passable"
-                        onSelect={event => {
-                          event.preventDefault()
-                          setVictoryThreshold("passable")
-                          updateThresholdInUrl("passable")
-                        }}>
-                        Passable
-                      </DropdownMenuRadioItem>
-                    </DropdownMenuRadioGroup>
-                  </DropdownMenuSubContent>
-                </DropdownMenuSub>
-                <DropdownMenuItem
-                  onClick={handleReturnHome}
-                  className="gap-2"
-                  disabled={isLoading}>
-                  <Plus />
-                  Nouveau scrutin
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+    <VictoryThresholdContext.Provider
+      value={{ victoryThreshold, setVictoryThreshold }}>
+      <main className="flex min-h-screen flex-col p-4 md:p-8">
+        <div className="container mx-auto max-w-6xl">
+          <div className="mb-6 flex flex-col items-center justify-between md:flex-row">
+            <div className="flex flex-col items-center md:flex-row md:gap-4">
+              <h1 className="text-3xl font-bold">Résultat du scrutin</h1>
+              <DropdownMenu>
+                <DropdownMenuTrigger
+                  asChild
+                  className={`${copyStatus === "success" ? "focus-visible:ring-0 focus-visible:ring-offset-0" : ""} rounded-full`}>
+                  <Button
+                    variant={getButtonProps().variant}
+                    className={`${getButtonProps().className}`}
+                    size="icon">
+                    {getButtonProps().icon}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem
+                    onClick={handleCopyLink}
+                    className="gap-2"
+                    disabled={isLoading}>
+                    <Link2 />
+                    Copier le lien
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={handleCopyText}
+                    className="gap-2"
+                    disabled={isLoading}>
+                    <Text />
+                    Copier le texte
+                  </DropdownMenuItem>
+                  <Suspense>
+                    <ThresholdSelector />
+                  </Suspense>
+                  <DropdownMenuItem
+                    onClick={handleReturnHome}
+                    className="gap-2"
+                    disabled={isLoading}>
+                    <Plus />
+                    Nouveau scrutin
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+            <Image
+              src={Logo}
+              alt="Logo Equinoxe"
+              width={150}
+              height={70}
+              className="hidden md:block"
+            />
           </div>
-          <Image
-            src={Logo}
-            alt="Logo Equinoxe"
-            width={150}
-            height={70}
-            className="hidden md:block"
-          />
+
+          <Suspense>
+            <ResultData setData={setData} setIsLoading={setIsLoading} />
+          </Suspense>
+
+          {isLoading ? (
+            <LoadingContent />
+          ) : data ? (
+            <ResultDisplay data={data} />
+          ) : null}
         </div>
+      </main>
+    </VictoryThresholdContext.Provider>
+  )
+}
 
-        <Suspense>
-          <ResultData setData={setData} setIsLoading={setIsLoading} />
-        </Suspense>
+function ThresholdSelector() {
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const { victoryThreshold, setVictoryThreshold } = useVictoryThreshold()
 
-        {isLoading ? (
-          <LoadingContent />
-        ) : data ? (
-          <ResultDisplay data={data} victoryThreshold={victoryThreshold} />
-        ) : null}
-      </div>
-    </main>
+  // Fonction pour mettre à jour l'URL avec le nouveau seuil
+  const updateThresholdInUrl = (value: string) => {
+    const params = new URLSearchParams(searchParams.toString())
+    if (value === "meilleur_score") {
+      params.delete("s")
+    } else {
+      const sValue = value === "excellent" ? "1" : value === "bien" ? "2" : "3"
+      params.set("s", sValue)
+    }
+    // Utiliser encodeURIComponent avec remplacement des %20 par des +
+    const queryString = params.toString().replace(/%20/g, "+")
+    router.push(`?${queryString}`, { scroll: false })
+  }
+
+  return (
+    <DropdownMenuSub>
+      <DropdownMenuSubTrigger className="gap-2">
+        <Sparkles />
+        Seuil de victoire
+      </DropdownMenuSubTrigger>
+      <DropdownMenuSubContent>
+        <DropdownMenuRadioGroup value={victoryThreshold}>
+          <DropdownMenuRadioItem
+            value="meilleur_score"
+            onSelect={event => {
+              event.preventDefault()
+              setVictoryThreshold("meilleur_score")
+              updateThresholdInUrl("meilleur_score")
+            }}>
+            Meilleur score
+          </DropdownMenuRadioItem>
+          <DropdownMenuRadioItem
+            value="excellent"
+            onSelect={event => {
+              event.preventDefault()
+              setVictoryThreshold("excellent")
+              updateThresholdInUrl("excellent")
+            }}>
+            Excellent
+          </DropdownMenuRadioItem>
+          <DropdownMenuRadioItem
+            value="bien"
+            onSelect={event => {
+              event.preventDefault()
+              setVictoryThreshold("bien")
+              updateThresholdInUrl("bien")
+            }}>
+            Bien
+          </DropdownMenuRadioItem>
+          <DropdownMenuRadioItem
+            value="passable"
+            onSelect={event => {
+              event.preventDefault()
+              setVictoryThreshold("passable")
+              updateThresholdInUrl("passable")
+            }}>
+            Passable
+          </DropdownMenuRadioItem>
+        </DropdownMenuRadioGroup>
+      </DropdownMenuSubContent>
+    </DropdownMenuSub>
   )
 }
 
@@ -411,13 +433,9 @@ function LoadingContent() {
   )
 }
 
-function ResultDisplay({
-  data,
-  victoryThreshold,
-}: {
-  data: ResultData
-  victoryThreshold: string
-}) {
+function ResultDisplay({ data }: { data: ResultData }) {
+  const { victoryThreshold } = useVictoryThreshold()
+
   // Trier les choix par score
   const sortedChoices = Object.entries(data.distribution)
     .map(([name, data]) => ({
@@ -427,10 +445,7 @@ function ResultDisplay({
     .sort((a, b) => parseFloat(b.score) - parseFloat(a.score))
 
   // Fonction pour déterminer si un choix est gagnant selon le seuil
-  const isWinner = (
-    choice: (typeof sortedChoices)[0],
-    victoryThreshold: string,
-  ) => {
+  const isWinner = (choice: (typeof sortedChoices)[0]) => {
     if (victoryThreshold === "meilleur_score") {
       const maxScore = Math.max(...sortedChoices.map(c => parseFloat(c.score)))
       return parseFloat(choice.score) === maxScore
@@ -486,9 +501,7 @@ function ResultDisplay({
                 <div
                   key={choice.name}
                   className={`flex flex-col rounded-lg border p-4 ${
-                    isWinner(choice, victoryThreshold)
-                      ? "border-[#ffd412]/75 bg-[#ffd412]/5"
-                      : ""
+                    isWinner(choice) ? "border-[#ffd412]/75 bg-[#ffd412]/5" : ""
                   }`}>
                   <div className="flex items-center gap-3">
                     <span className="text-xl font-bold text-muted-foreground">
@@ -511,7 +524,7 @@ function ResultDisplay({
                         ({choice.score})
                       </p>
                     </div>
-                    {isWinner(choice, victoryThreshold) ? (
+                    {isWinner(choice) ? (
                       <Sparkles className="text-[#ffd412]/75" />
                     ) : null}
                   </div>

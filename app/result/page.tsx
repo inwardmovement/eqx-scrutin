@@ -35,6 +35,7 @@ import {
   DropdownMenuSubContent,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
+  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu"
 import {
   Link2,
@@ -325,6 +326,7 @@ function ThresholdSelector() {
             }}>
             Meilleur score
           </DropdownMenuRadioItem>
+          <DropdownMenuSeparator />
           <DropdownMenuRadioItem
             value="excellent"
             onSelect={event => {

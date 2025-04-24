@@ -183,7 +183,7 @@ function ResultContent() {
     currentUrl.searchParams.set("d", "embed")
     const embedUrl = currentUrl.toString()
 
-    const embedCode = `<iframe src="${embedUrl}" style="position: fixed; border: none; width: 100%; height: 100%;"></iframe>`
+    const embedCode = `<iframe src="${embedUrl}" style="border: none; width: 100%" height="500"></iframe>`
 
     navigator.clipboard
       .writeText(embedCode)

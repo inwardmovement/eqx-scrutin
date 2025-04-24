@@ -14,8 +14,11 @@ import { toast } from "sonner"
 import { Spinner } from "@/components/ui/spinner"
 import Logo from "@/public/logo-eqx.webp"
 import { processDocument } from "./actions"
+import { processDocument as processDocument6 } from "./actions-6"
 import Link from "next/link"
 import { formatDataForUrl } from "./utils/format"
+import { formatDataForUrl as formatDataForUrl6 } from "./utils/format-6"
+import { Checkbox } from "@/components/ui/checkbox"
 
 // Composant séparé pour gérer les paramètres d'URL
 function ErrorHandler() {
@@ -48,6 +51,7 @@ function ErrorHandler() {
 function HomeContent() {
   const [file, setFile] = useState<File | null>(null)
   const [isLoading, setIsLoading] = useState(false)
+  const [isVersion6, setIsVersion6] = useState(false)
   const router = useRouter()
 
   // Soumettre le formulaire quand le fichier est collecté
@@ -66,22 +70,56 @@ function HomeContent() {
       const formData = new FormData()
       formData.append("document", file)
 
-      const result = await processDocument(formData)
+      const result = await (isVersion6 ? processDocument6 : processDocument)(
+        formData,
+      )
 
       if (result.success && result.data) {
-        // Encode les données pour l'URL dans le nouveau format
-        const urlData = formatDataForUrl(result.data)
-
-        // Rediriger vers la page du résultat en transmettant les données
-        router.push(`/result?data=${urlData}`)
+        const urlData = (isVersion6 ? formatDataForUrl6 : formatDataForUrl)(
+          result.data,
+        )
+        router.push(`/result${isVersion6 ? "-6" : ""}?data=${urlData}`)
       } else {
         console.error("Error processing file")
         toast.error("Erreur lors du traitement du fichier")
         setIsLoading(false)
       }
     } catch (error) {
-      console.error("Error:", error)
-      toast.error("Erreur lors du traitement du fichier")
+      if (error instanceof Error) {
+        const errorMessage = error.message.toLowerCase()
+        if (
+          errorMessage.includes("vote invalide") ||
+          errorMessage.includes("mention invalide")
+        ) {
+          if (isVersion6) {
+            toast.error("Format de fichier incompatible", {
+              description:
+                "Ce fichier utilise le format à 5 mentions (Excellent, Bien, Passable, Insuffisant, À rejeter). Décoche la case 'Version 6 mentions' pour l'analyser.",
+            })
+          } else {
+            toast.error("Format de fichier incompatible", {
+              description:
+                "Ce fichier utilise le format à 6 mentions (Très bien, Assez bien, Bien, Passable, Insuffisant, À rejeter). Coche la case 'Version 6 mentions' pour l'analyser.",
+            })
+          }
+        } else if (errorMessage.includes("ligne invalide")) {
+          toast.error("Format de fichier incorrect", {
+            description: error.message,
+          })
+        } else if (errorMessage.includes("aucun document")) {
+          toast.error("Aucun fichier sélectionné", {
+            description: "Veuillez sélectionner un fichier CSV à analyser",
+          })
+        } else {
+          toast.error("Erreur lors du traitement du fichier", {
+            description: error.message,
+          })
+        }
+      } else {
+        toast.error("Erreur lors du traitement du fichier", {
+          description: "Format de fichier invalide",
+        })
+      }
       setIsLoading(false)
     }
   }
@@ -172,8 +210,8 @@ function HomeContent() {
         <CardFooter className="flex-col items-start text-xs text-gray-600">
           <ul className="list-disc pl-4">
             <li>
-              Mentions possibles : <em>Excellent</em>, <em>Bien</em>,{" "}
-              <em>Passable</em>, <em>Insuffisant</em>, <em>À rejeter</em>
+              Mentions : <em>Excellent</em>, <em>Bien</em>, <em>Passable</em>,{" "}
+              <em>Insuffisant</em>, <em>À rejeter</em>
             </li>
             <li>
               Résultat calculé au{" "}
@@ -185,6 +223,19 @@ function HomeContent() {
               </Link>
             </li>
           </ul>
+          <div className="flex items-center space-x-2 pt-4">
+            <Checkbox
+              id="version6"
+              className="text-muted-foreground"
+              checked={isVersion6}
+              onCheckedChange={checked => setIsVersion6(checked === true)}
+            />
+            <label
+              htmlFor="version6"
+              className="font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+              Version 6 mentions
+            </label>
+          </div>
         </CardFooter>
       </Card>
     </main>

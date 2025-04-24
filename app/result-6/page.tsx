@@ -1,0 +1,638 @@
+"use client"
+
+import { Suspense, useState, useEffect, createContext, useContext } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
+import Image from "next/image"
+import Link from "next/link"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip as TooltipChart,
+  Legend,
+  ResponsiveContainer,
+} from "recharts"
+import { Skeleton } from "@/components/ui/skeleton"
+import Logo from "@/public/logo-eqx.webp"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSub,
+  DropdownMenuSubTrigger,
+  DropdownMenuSubContent,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu"
+import {
+  Link2,
+  Text,
+  Plus,
+  Check,
+  X,
+  EllipsisVertical,
+  Sparkles,
+  CodeXml,
+} from "lucide-react"
+import { parseUrlData, RATING_COLORS, RATING_ORDER } from "../utils/format-6"
+
+type ResultData = {
+  distribution: {
+    [choice: string]: {
+      mention: string
+      score: string
+      distribution: {
+        [mention: string]: number
+      }
+    }
+  }
+  winner?: string
+  winningMention?: string
+  details?: { [key: string]: string }
+}
+
+const CustomTooltip = ({ active, payload, label }: any) => {
+  if (active && payload && payload.length) {
+    const choice = label
+    const distribution =
+      payload[0]?.payload?.originalDistribution?.[choice]?.distribution || {}
+
+    return (
+      <div className="rounded border bg-background p-3 shadow-lg">
+        <p className="font-bold text-foreground">{choice}</p>
+        {payload.map((entry: any, index: number) => {
+          const rating = entry.name
+          const votes = distribution[rating] || 0
+          const percentage = entry.value
+          return (
+            <p key={`item-${index}`} style={{ color: entry.color }}>
+              {`${rating}: ${percentage.toFixed(1)}% (${votes})`}
+            </p>
+          )
+        })}
+      </div>
+    )
+  }
+  return null
+}
+
+const VictoryThresholdContext = createContext<{
+  victoryThreshold: string
+  setVictoryThreshold: (value: string) => void
+}>({
+  victoryThreshold: "meilleur_score",
+  setVictoryThreshold: () => {},
+})
+
+function useVictoryThreshold() {
+  return useContext(VictoryThresholdContext)
+}
+
+function ResultContent() {
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const [data, setData] = useState<ResultData | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const [copyStatus, setCopyStatus] = useState<"idle" | "success" | "error">(
+    "idle",
+  )
+  const [victoryThreshold, setVictoryThreshold] = useState(() => {
+    const s = searchParams.get("s")
+    if (s === "1") return "tres_bien"
+    if (s === "2") return "bien"
+    if (s === "3") return "assez_bien"
+    if (s === "4") return "passable"
+    return "meilleur_score"
+  })
+  const isEmbedded = searchParams.get("d") === "embed"
+
+  useEffect(() => {
+    const s = searchParams.get("s")
+    if (s === "1") setVictoryThreshold("tres_bien")
+    else if (s === "2") setVictoryThreshold("bien")
+    else if (s === "3") setVictoryThreshold("assez_bien")
+    else if (s === "4") setVictoryThreshold("passable")
+    else setVictoryThreshold("meilleur_score")
+  }, [searchParams])
+
+  useEffect(() => {
+    if (copyStatus !== "idle") {
+      const timer = setTimeout(() => {
+        setCopyStatus("idle")
+      }, 2000)
+      return () => clearTimeout(timer)
+    }
+  }, [copyStatus])
+
+  const handleCopyLink = () => {
+    navigator.clipboard
+      .writeText(window.location.href)
+      .then(() => {
+        setCopyStatus("success")
+      })
+      .catch(err => {
+        console.error("Failed to copy: ", err)
+        setCopyStatus("error")
+      })
+  }
+
+  const handleCopyText = () => {
+    navigator.clipboard
+      .writeText("Résultat en texte")
+      .then(() => {
+        setCopyStatus("success")
+      })
+      .catch(err => {
+        console.error("Failed to copy: ", err)
+        setCopyStatus("error")
+      })
+  }
+
+  const handleCopyEmbedCode = () => {
+    const currentUrl = new URL(window.location.href)
+    currentUrl.searchParams.set("d", "embed")
+    const embedUrl = currentUrl.toString()
+
+    const embedCode = `<iframe height="500" style="border: none; width: 100%" src="${embedUrl}"></iframe>`
+
+    navigator.clipboard
+      .writeText(embedCode)
+      .then(() => {
+        setCopyStatus("success")
+      })
+      .catch(err => {
+        console.error("Failed to copy: ", err)
+        setCopyStatus("error")
+      })
+  }
+
+  const getButtonProps = () => {
+    switch (copyStatus) {
+      case "success":
+        return {
+          variant: "ghost" as const,
+          icon: <Check className="text-green-600" />,
+          className: "",
+        }
+      case "error":
+        return {
+          variant: "destructive" as const,
+          icon: <X />,
+          className: "",
+        }
+      default:
+        return {
+          variant: "ghost" as const,
+          icon: <EllipsisVertical />,
+          className: "",
+        }
+    }
+  }
+
+  const handleReturnHome = () => {
+    router.push("/")
+  }
+
+  return (
+    <VictoryThresholdContext.Provider
+      value={{ victoryThreshold, setVictoryThreshold }}>
+      <main className="flex min-h-screen flex-col p-4 md:p-8">
+        <div className="container mx-auto max-w-6xl">
+          {!isEmbedded && (
+            <div
+              id="header"
+              className="mb-6 flex flex-col items-center justify-between md:flex-row">
+              <div className="flex flex-col items-center md:flex-row md:gap-4">
+                <h1 className="text-3xl font-bold">Résultat du scrutin</h1>
+                <DropdownMenu>
+                  <DropdownMenuTrigger
+                    asChild
+                    className={`${
+                      copyStatus === "success"
+                        ? "focus-visible:ring-0 focus-visible:ring-offset-0"
+                        : ""
+                    } rounded-full`}>
+                    <Button
+                      variant={getButtonProps().variant}
+                      className={`${getButtonProps().className}`}
+                      size="icon">
+                      {getButtonProps().icon}
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem
+                      onClick={handleCopyLink}
+                      className="gap-2"
+                      disabled={isLoading}>
+                      <Link2 />
+                      Copier le lien
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={handleCopyText}
+                      className="gap-2"
+                      disabled={isLoading}>
+                      <Text />
+                      Copier le texte
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={handleCopyEmbedCode}
+                      className="gap-2"
+                      disabled={isLoading}>
+                      <CodeXml />
+                      Copier le code
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <Suspense>
+                      <ThresholdSelector />
+                    </Suspense>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      onClick={handleReturnHome}
+                      className="gap-2"
+                      disabled={isLoading}>
+                      <Plus />
+                      Nouveau scrutin
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+              <Image
+                src={Logo}
+                alt="Logo Equinoxe"
+                width={150}
+                height={70}
+                className="hidden md:block"
+              />
+            </div>
+          )}
+
+          <Suspense>
+            <ResultData setData={setData} setIsLoading={setIsLoading} />
+          </Suspense>
+
+          {isLoading ? (
+            <LoadingContent />
+          ) : data ? (
+            <ResultDisplay data={data} />
+          ) : null}
+          {!isEmbedded && (
+            <div
+              id="footer"
+              className="flex flex-row items-center gap-2 space-y-0 text-xs text-muted-foreground">
+              <div>
+                Résultat calculé au{" "}
+                <Link
+                  href="https://fr.wikipedia.org/wiki/Jugement_usuel"
+                  target="_blank"
+                  className="text-blue-600 hover:underline">
+                  Jugement médian
+                </Link>
+              </div>
+            </div>
+          )}
+        </div>
+      </main>
+    </VictoryThresholdContext.Provider>
+  )
+}
+
+function ThresholdSelector() {
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const { victoryThreshold, setVictoryThreshold } = useVictoryThreshold()
+
+  const updateThresholdInUrl = (value: string) => {
+    const params = new URLSearchParams(searchParams.toString())
+    if (value === "meilleur_score") {
+      params.delete("s")
+    } else {
+      const sValue =
+        value === "tres_bien"
+          ? "1"
+          : value === "bien"
+            ? "2"
+            : value === "assez_bien"
+              ? "3"
+              : "4"
+      params.set("s", sValue)
+    }
+    const queryString = params.toString().replace(/%20/g, "+")
+    router.push(`?${queryString}`, { scroll: false })
+  }
+
+  return (
+    <DropdownMenuSub>
+      <DropdownMenuSubTrigger className="gap-2">
+        <Sparkles />
+        Seuil de victoire
+      </DropdownMenuSubTrigger>
+      <DropdownMenuSubContent>
+        <DropdownMenuRadioGroup value={victoryThreshold}>
+          <DropdownMenuRadioItem
+            value="meilleur_score"
+            onSelect={event => {
+              event.preventDefault()
+              setVictoryThreshold("meilleur_score")
+              updateThresholdInUrl("meilleur_score")
+            }}>
+            Meilleur score
+          </DropdownMenuRadioItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuRadioItem
+            value="tres_bien"
+            onSelect={event => {
+              event.preventDefault()
+              setVictoryThreshold("tres_bien")
+              updateThresholdInUrl("tres_bien")
+            }}>
+            Très bien
+          </DropdownMenuRadioItem>
+          <DropdownMenuRadioItem
+            value="bien"
+            onSelect={event => {
+              event.preventDefault()
+              setVictoryThreshold("bien")
+              updateThresholdInUrl("bien")
+            }}>
+            Bien
+          </DropdownMenuRadioItem>
+          <DropdownMenuRadioItem
+            value="assez_bien"
+            onSelect={event => {
+              event.preventDefault()
+              setVictoryThreshold("assez_bien")
+              updateThresholdInUrl("assez_bien")
+            }}>
+            Assez bien
+          </DropdownMenuRadioItem>
+          <DropdownMenuRadioItem
+            value="passable"
+            onSelect={event => {
+              event.preventDefault()
+              setVictoryThreshold("passable")
+              updateThresholdInUrl("passable")
+            }}>
+            Passable
+          </DropdownMenuRadioItem>
+        </DropdownMenuRadioGroup>
+      </DropdownMenuSubContent>
+    </DropdownMenuSub>
+  )
+}
+
+function ResultData({
+  setData,
+  setIsLoading,
+}: {
+  setData: (data: ResultData | null) => void
+  setIsLoading: (loading: boolean) => void
+}) {
+  const searchParams = useSearchParams()
+  const router = useRouter()
+
+  useEffect(() => {
+    const urlData = searchParams.get("data")
+    if (!urlData) {
+      router.replace("/?error=no_result")
+      return
+    }
+
+    try {
+      const data = parseUrlData(urlData)
+      setData(data)
+    } catch (error) {
+      console.error("Error parsing data from URL:", error)
+      router.replace("/?error=invalid_data")
+    } finally {
+      setIsLoading(false)
+    }
+  }, [searchParams, router, setData, setIsLoading])
+
+  return null
+}
+
+function LoadingContent() {
+  return (
+    <>
+      <div className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <CardTitle>Classement</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-col gap-4">
+              {[1, 2, 3].map((_, index) => (
+                <div
+                  key={index}
+                  className={`flex flex-col rounded-lg border p-4`}>
+                  <div className="flex items-center gap-3">
+                    <Skeleton className="h-8 w-8 rounded-full" />
+                    <div className="flex-1">
+                      <Skeleton className="mb-2 h-6 w-32" />
+                      <Skeleton className="h-4 w-48" />
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Distribution des votes</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="h-80">
+              <div className="flex h-full flex-col">
+                <div className="flex-1 space-y-8 py-8">
+                  {[1, 2, 3].map((_, index) => (
+                    <div key={index} className="flex items-center gap-4">
+                      <Skeleton className="h-6 w-20 text-muted-foreground" />
+                      <div className="flex-1">
+                        <div className="flex h-6">
+                          <Skeleton className="h-full w-[15%] rounded-none bg-muted/50" />
+                          <Skeleton className="h-full w-[20%] rounded-none bg-muted/75" />
+                          <Skeleton className="h-full w-[25%] rounded-none bg-muted/50" />
+                          <Skeleton className="h-full w-[20%] rounded-none bg-muted/75" />
+                          <Skeleton className="h-full w-[20%] rounded-none bg-muted/50" />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </>
+  )
+}
+
+function ResultDisplay({ data }: { data: ResultData }) {
+  const { victoryThreshold } = useVictoryThreshold()
+
+  const sortedChoices = Object.entries(data.distribution)
+    .map(([name, data]) => ({
+      name,
+      ...data,
+    }))
+    .sort((a, b) => parseFloat(b.score) - parseFloat(a.score))
+
+  const isWinner = (choice: (typeof sortedChoices)[0]) => {
+    if (victoryThreshold === "meilleur_score") {
+      const maxScore = Math.max(...sortedChoices.map(c => parseFloat(c.score)))
+      return parseFloat(choice.score) === maxScore
+    }
+
+    const thresholdIndex = RATING_ORDER.findIndex(
+      mention => mention.toLowerCase().replace(" ", "_") === victoryThreshold,
+    )
+
+    const choiceIndex = RATING_ORDER.findIndex(
+      mention => mention === choice.mention,
+    )
+
+    return choiceIndex <= thresholdIndex
+  }
+
+  const chartData = sortedChoices.map(choice => {
+    const result: { [key: string]: any } = { name: choice.name }
+
+    const totalVotes = Object.values(choice.distribution).reduce(
+      (sum, count) => sum + count,
+      0,
+    )
+
+    result.originalDistribution = data.distribution
+
+    RATING_ORDER.forEach(rating => {
+      const count = choice.distribution[rating] || 0
+      result[rating] = totalVotes > 0 ? (count / totalVotes) * 100 : 0
+    })
+
+    return result
+  })
+
+  return (
+    <>
+      <div className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <CardTitle>Classement</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-col gap-4">
+              {sortedChoices.map((choice, index) => (
+                <div
+                  key={choice.name}
+                  className={`flex flex-col rounded-lg border p-4 ${
+                    isWinner(choice) ? "border-[#ffd412]/75 bg-[#ffd412]/5" : ""
+                  }`}>
+                  <div className="flex items-center gap-3">
+                    <span className="text-xl font-bold text-muted-foreground">
+                      #{index + 1}
+                    </span>
+                    <div className="flex-1">
+                      <h3 className="text-lg font-semibold">{choice.name}</h3>
+                      <p className="text-sm text-muted-foreground">
+                        Mention{" "}
+                        <span
+                          className="font-medium"
+                          style={{
+                            color:
+                              RATING_COLORS[
+                                choice.mention as keyof typeof RATING_COLORS
+                              ],
+                          }}>
+                          {choice.mention}
+                        </span>{" "}
+                        ({choice.score})
+                      </p>
+                    </div>
+                    {isWinner(choice) ? (
+                      <Sparkles className="text-[#ffd412]/75" />
+                    ) : null}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Distribution des votes</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="h-80">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart
+                  layout="vertical"
+                  data={chartData}
+                  margin={{
+                    top: 20,
+                    right: 30,
+                    left: 20,
+                    bottom: 5,
+                  }}
+                  stackOffset="expand"
+                  barCategoryGap={10}
+                  barSize={30}>
+                  <CartesianGrid
+                    strokeDasharray="3 3"
+                    stroke="currentColor"
+                    opacity={0.1}
+                  />
+                  <XAxis
+                    type="number"
+                    tickFormatter={value => `${(value * 100).toFixed(0)}%`}
+                    domain={[0, 1]}
+                    ticks={[0, 0.25, 0.5, 0.75, 1]}
+                    tick={{ fill: "#a3a3a3" }}
+                  />
+                  <YAxis
+                    dataKey="name"
+                    type="category"
+                    tick={{ fill: "#a3a3a3" }}
+                    tickFormatter={(value, index) => `#${index + 1}`}
+                    interval={0}
+                  />
+                  <TooltipChart
+                    content={<CustomTooltip />}
+                    cursor={{ fill: "currentColor", opacity: 0.1 }}
+                  />
+                  <Legend />
+                  {RATING_ORDER.map(rating => (
+                    <Bar
+                      key={rating}
+                      dataKey={rating}
+                      stackId="a"
+                      fill={RATING_COLORS[rating as keyof typeof RATING_COLORS]}
+                      name={rating}
+                    />
+                  ))}
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </>
+  )
+}
+
+export default function ResultPage() {
+  return (
+    <Suspense>
+      <ResultContent />
+    </Suspense>
+  )
+}

@@ -145,6 +145,7 @@ function ResultContent() {
     if (s === "3") return "passable"
     return "meilleur_score"
   })
+  const isEmbedded = searchParams.get("d") === "embed"
 
   // Mettre à jour le seuil quand les paramètres d'URL changent
   useEffect(() => {
@@ -225,56 +226,60 @@ function ResultContent() {
       value={{ victoryThreshold, setVictoryThreshold }}>
       <main className="flex min-h-screen flex-col p-4 md:p-8">
         <div className="container mx-auto max-w-6xl">
-          <div className="mb-6 flex flex-col items-center justify-between md:flex-row">
-            <div className="flex flex-col items-center md:flex-row md:gap-4">
-              <h1 className="text-3xl font-bold">Résultat du scrutin</h1>
-              <DropdownMenu>
-                <DropdownMenuTrigger
-                  asChild
-                  className={`${copyStatus === "success" ? "focus-visible:ring-0 focus-visible:ring-offset-0" : ""} rounded-full`}>
-                  <Button
-                    variant={getButtonProps().variant}
-                    className={`${getButtonProps().className}`}
-                    size="icon">
-                    {getButtonProps().icon}
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem
-                    onClick={handleCopyLink}
-                    className="gap-2"
-                    disabled={isLoading}>
-                    <Link2 />
-                    Copier le lien
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={handleCopyText}
-                    className="gap-2"
-                    disabled={isLoading}>
-                    <Text />
-                    Copier le texte
-                  </DropdownMenuItem>
-                  <Suspense>
-                    <ThresholdSelector />
-                  </Suspense>
-                  <DropdownMenuItem
-                    onClick={handleReturnHome}
-                    className="gap-2"
-                    disabled={isLoading}>
-                    <Plus />
-                    Nouveau scrutin
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+          {!isEmbedded && (
+            <div
+              id="header"
+              className="mb-6 flex flex-col items-center justify-between md:flex-row">
+              <div className="flex flex-col items-center md:flex-row md:gap-4">
+                <h1 className="text-3xl font-bold">Résultat du scrutin</h1>
+                <DropdownMenu>
+                  <DropdownMenuTrigger
+                    asChild
+                    className={`${copyStatus === "success" ? "focus-visible:ring-0 focus-visible:ring-offset-0" : ""} rounded-full`}>
+                    <Button
+                      variant={getButtonProps().variant}
+                      className={`${getButtonProps().className}`}
+                      size="icon">
+                      {getButtonProps().icon}
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem
+                      onClick={handleCopyLink}
+                      className="gap-2"
+                      disabled={isLoading}>
+                      <Link2 />
+                      Copier le lien
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={handleCopyText}
+                      className="gap-2"
+                      disabled={isLoading}>
+                      <Text />
+                      Copier le texte
+                    </DropdownMenuItem>
+                    <Suspense>
+                      <ThresholdSelector />
+                    </Suspense>
+                    <DropdownMenuItem
+                      onClick={handleReturnHome}
+                      className="gap-2"
+                      disabled={isLoading}>
+                      <Plus />
+                      Nouveau scrutin
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+              <Image
+                src={Logo}
+                alt="Logo Equinoxe"
+                width={150}
+                height={70}
+                className="hidden md:block"
+              />
             </div>
-            <Image
-              src={Logo}
-              alt="Logo Equinoxe"
-              width={150}
-              height={70}
-              className="hidden md:block"
-            />
-          </div>
+          )}
 
           <Suspense>
             <ResultData setData={setData} setIsLoading={setIsLoading} />
@@ -285,18 +290,21 @@ function ResultContent() {
           ) : data ? (
             <ResultDisplay data={data} />
           ) : null}
-          <div className="flex flex-row items-center gap-2 space-y-0 text-xs text-muted-foreground">
-            {/* <Info className="size-5" /> */}
-            <div>
-              Résultat calculé au{" "}
-              <Link
-                href="https://fr.wikipedia.org/wiki/Jugement_usuel"
-                target="_blank"
-                className="text-blue-600 hover:underline">
-                Jugement médian
-              </Link>
+          {!isEmbedded && (
+            <div
+              id="footer"
+              className="flex flex-row items-center gap-2 space-y-0 text-xs text-muted-foreground">
+              <div>
+                Résultat calculé au{" "}
+                <Link
+                  href="https://fr.wikipedia.org/wiki/Jugement_usuel"
+                  target="_blank"
+                  className="text-blue-600 hover:underline">
+                  Jugement médian
+                </Link>
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </main>
     </VictoryThresholdContext.Provider>

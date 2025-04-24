@@ -4,14 +4,7 @@ import { Suspense, useState, useEffect, createContext, useContext } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import Image from "next/image"
 import Link from "next/link"
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import {
   BarChart,
@@ -45,17 +38,9 @@ import {
   X,
   EllipsisVertical,
   Sparkles,
-  Info,
+  CodeXml,
 } from "lucide-react"
 import { parseUrlData } from "../utils/format"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { Label } from "@/components/ui/label"
-
-type Distribution = {
-  [choice: string]: {
-    [rating: string]: number
-  }
-}
 
 type ResultData = {
   distribution: {
@@ -192,6 +177,25 @@ function ResultContent() {
       })
   }
 
+  // Handle copying embed code
+  const handleCopyEmbedCode = () => {
+    const currentUrl = new URL(window.location.href)
+    currentUrl.searchParams.set("d", "embed")
+    const embedUrl = currentUrl.toString()
+
+    const embedCode = `<iframe src="${embedUrl}" style="position: fixed; border: none; width: 100%; height: 100%;"></iframe>`
+
+    navigator.clipboard
+      .writeText(embedCode)
+      .then(() => {
+        setCopyStatus("success")
+      })
+      .catch(err => {
+        console.error("Failed to copy: ", err)
+        setCopyStatus("error")
+      })
+  }
+
   // Get button properties based on status
   const getButtonProps = () => {
     switch (copyStatus) {
@@ -258,9 +262,18 @@ function ResultContent() {
                       <Text />
                       Copier le texte
                     </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={handleCopyEmbedCode}
+                      className="gap-2"
+                      disabled={isLoading}>
+                      <CodeXml />
+                      Copier le code
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
                     <Suspense>
                       <ThresholdSelector />
                     </Suspense>
+                    <DropdownMenuSeparator />
                     <DropdownMenuItem
                       onClick={handleReturnHome}
                       className="gap-2"

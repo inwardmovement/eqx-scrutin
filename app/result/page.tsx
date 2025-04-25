@@ -578,7 +578,7 @@ function ResultDisplay({ data }: { data: ResultData }) {
                     </div>
                     {isWinner(choice) ? (
                       <div className="flex gap-2 text-[#ffd412]/75">
-                        <span>Validé</span>
+                        <span>Validation</span>
                         <Sparkles />
                       </div>
                     ) : null}

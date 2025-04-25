@@ -50,7 +50,7 @@ export function formatDataForUrl(data: ScrutinData): string {
       .join("")
 
     // Retourne le format demandé pour ce choix
-    return `${encodedName}-${mentionShortcut}-${distributionString}-${choice.score}`
+    return `${encodedName}~${mentionShortcut}~${distributionString}~${choice.score}`
   })
 
   // Joint tous les choix avec le caractère '_'
@@ -64,7 +64,7 @@ export function parseUrlData(urlData: string): ScrutinData {
   const choices = urlData.split("_")
   for (const choice of choices) {
     const [encodedName, mentionShortcut, distributionString, score] =
-      choice.split("-")
+      choice.split("~")
 
     // Remplace les + par des espaces avant de décoder
     const name = decodeURIComponent(encodedName.replace(/\+/g, " "))

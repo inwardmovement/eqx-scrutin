@@ -16,14 +16,30 @@ export async function processDocument(formData: FormData) {
       const decoder = new TextDecoder("utf-8")
       fileContent = decoder.decode(arrayBuffer)
 
-      const lines = fileContent.split(/\r?\n/).filter(line => line.trim())
+      // Nettoyer le contenu du fichier
+      fileContent = fileContent
+        .replace(/\r\n/g, "\n")
+        .replace(/\r/g, "\n")
+        .trim()
+
+      const lines = fileContent.split("\n").filter(line => line.trim())
+
       if (lines.length < 2) {
         throw new Error(
           "Le fichier CSV doit contenir au moins un en-tête et une ligne de données",
         )
       }
 
-      const choices = lines[0].split(",").map(choice => choice.trim())
+      // Nettoyer les choix
+      const choices = lines[0]
+        .split(",")
+        .map(choice => choice.trim())
+        .filter(choice => choice.length > 0)
+
+      if (choices.length === 0) {
+        throw new Error("L'en-tête ne contient aucun choix valide")
+      }
+
       const distribution: { [key: string]: any } = {}
       const mentionCounts: { [key: string]: { [mention: string]: number } } = {}
 
@@ -89,18 +105,22 @@ export async function processDocument(formData: FormData) {
 
       for (let i = 1; i < lines.length; i++) {
         const votes = lines[i].split(",").map(vote => vote.trim())
+
         if (votes.length !== choices.length) {
           throw new Error(
             `Ligne ${i + 1} invalide: nombre de votes incorrect (${votes.length} au lieu de ${choices.length})`,
           )
         }
+
         votes.forEach((vote, index) => {
-          if (!validMentions.has(vote)) {
+          const voteToUse = vote.length === 0 ? "Passable" : vote
+
+          if (!validMentions.has(voteToUse)) {
             throw new Error(
-              `Vote invalide à la ligne ${i + 1}: "${vote}" pour "${choices[index]}"\nMentions valides: ${Array.from(validMentions).join(", ")}`,
+              `Vote invalide à la ligne ${i + 1}: "${voteToUse}" pour "${choices[index]}"\nMentions valides: ${Array.from(validMentions).join(", ")}`,
             )
           }
-          mentionCounts[choices[index]][vote]++
+          mentionCounts[choices[index]][voteToUse]++
         })
       }
 
@@ -156,11 +176,21 @@ export async function processDocument(formData: FormData) {
 
       return { success: true, data: responseData }
     } catch (error) {
-      console.error("Error reading file content:", error)
+      if (error instanceof Error) {
+        console.error("Erreur détaillée:", error.message)
+        throw new Error(
+          `Erreur lors du traitement du fichier: ${error.message}`,
+        )
+      }
       throw error
     }
   } catch (error) {
-    console.error("Error processing document:", error)
-    return { success: false, error: "Error processing document" }
+    if (error instanceof Error) {
+      return { success: false, error: error.message }
+    }
+    return {
+      success: false,
+      error: "Erreur inconnue lors du traitement du fichier",
+    }
   }
 }

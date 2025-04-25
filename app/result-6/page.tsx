@@ -40,7 +40,13 @@ import {
   Sparkles,
   CodeXml,
 } from "lucide-react"
-import { parseUrlData, RATING_COLORS, RATING_ORDER } from "../utils/format-6"
+import {
+  parseUrlData,
+  RATING_COLORS,
+  RATING_ORDER,
+  MENTION_FULL,
+  MENTION_SHORTCUTS,
+} from "../utils/format-6"
 
 type ResultData = {
   distribution: {
@@ -492,15 +498,21 @@ function ResultDisplay({ data }: { data: ResultData }) {
       return parseFloat(choice.score) === maxScore
     }
 
-    const thresholdIndex = RATING_ORDER.findIndex(
-      mention => mention.toLowerCase().replace(" ", "_") === victoryThreshold,
-    )
+    const thresholdMention =
+      victoryThreshold === "tres_bien"
+        ? "Très bien"
+        : victoryThreshold === "assez_bien"
+          ? "Assez bien"
+          : victoryThreshold.charAt(0).toUpperCase() + victoryThreshold.slice(1)
 
+    const thresholdIndex = RATING_ORDER.findIndex(
+      mention => mention === thresholdMention,
+    )
     const choiceIndex = RATING_ORDER.findIndex(
       mention => mention === choice.mention,
     )
 
-    return choiceIndex <= thresholdIndex
+    return choiceIndex >= thresholdIndex
   }
 
   const chartData = sortedChoices.map(choice => {

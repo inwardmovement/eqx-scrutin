@@ -30,12 +30,12 @@ export const RATING_COLORS = {
 
 // Ordre des mentions
 export const RATING_ORDER = [
-  "Très bien",
-  "Bien",
-  "Assez bien",
-  "Passable",
-  "Insuffisant",
   "À rejeter",
+  "Insuffisant",
+  "Passable",
+  "Assez bien",
+  "Bien",
+  "Très bien",
 ]
 
 type Distribution = {
@@ -60,7 +60,8 @@ type ScrutinData = {
 // Convertit les données du scrutin en format URL
 export function formatDataForUrl(data: ScrutinData): string {
   const choices = Object.entries(data.distribution).map(([name, choice]) => {
-    const encodedName = encodeURIComponent(name).replace(/%20/g, "+")
+    // Encoder tous les caractères spéciaux
+    const encodedName = encodeURIComponent(name)
 
     // Vérifier que la mention est valide
     if (!MENTION_SHORTCUTS[choice.mention]) {
@@ -77,7 +78,7 @@ export function formatDataForUrl(data: ScrutinData): string {
         return `${MENTION_SHORTCUTS[mention]}${count}`
       })
       .join("")
-    return `${encodedName}-${mentionShortcut}-${distributionString}-${choice.score}`
+    return `${encodedName}~${mentionShortcut}~${distributionString}~${choice.score}`
   })
   return choices.join("_")
 }
@@ -88,23 +89,37 @@ export function parseUrlData(urlData: string): ScrutinData {
 
   const choices = urlData.split("_")
   for (const choice of choices) {
-    const [encodedName, mentionShortcut, distributionString, score] =
-      choice.split("-")
+    const parts = choice.split("~")
+    if (parts.length < 4) {
+      console.error(`Format de données invalide: ${choice}`)
+      continue
+    }
 
-    const name = decodeURIComponent(encodedName.replace(/\+/g, " "))
+    const [encodedName, mentionShortcut, distributionString, score] = parts
+    // Décoder tous les caractères spéciaux
+    const name = decodeURIComponent(encodedName)
+
+    // Vérifier si la mention est valide
+    const mention = MENTION_FULL[mentionShortcut]
+    if (!mention) {
+      console.error(
+        `Mention non trouvée pour l'abréviation: ${mentionShortcut}`,
+      )
+      continue
+    }
 
     const distributionData: Distribution = {}
     let currentIndex = 0
     while (currentIndex < distributionString.length) {
       // Vérifier si c'est une abréviation à deux lettres (AB, TB)
-      let mentionShortcut = distributionString[currentIndex]
+      let currentMentionShortcut = distributionString[currentIndex]
       if (currentIndex + 1 < distributionString.length) {
         const nextChar = distributionString[currentIndex + 1]
         if (
           nextChar === "B" &&
-          (mentionShortcut === "A" || mentionShortcut === "T")
+          (currentMentionShortcut === "A" || currentMentionShortcut === "T")
         ) {
-          mentionShortcut += "B"
+          currentMentionShortcut += "B"
           currentIndex++
         }
       }
@@ -118,13 +133,11 @@ export function parseUrlData(urlData: string): ScrutinData {
         countStr += distributionString[currentIndex]
         currentIndex++
       }
-      const mention = MENTION_FULL[mentionShortcut]
-      if (mention) {
-        distributionData[mention] = Number(countStr)
+      const distributionMention = MENTION_FULL[currentMentionShortcut]
+      if (distributionMention) {
+        distributionData[distributionMention] = Number(countStr)
       }
     }
-
-    const mention = MENTION_FULL[mentionShortcut]
 
     distribution[name] = {
       mention,

@@ -512,7 +512,7 @@ function ResultDisplay({ data }: { data: ResultData }) {
       mention => mention === choice.mention,
     )
 
-    return choiceIndex >= thresholdIndex
+    return choiceIndex <= thresholdIndex
   }
 
   const chartData = sortedChoices.map(choice => {

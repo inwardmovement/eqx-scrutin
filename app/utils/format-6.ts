@@ -30,12 +30,12 @@ export const RATING_COLORS = {
 
 // Ordre des mentions
 export const RATING_ORDER = [
-  "À rejeter",
-  "Insuffisant",
-  "Passable",
-  "Assez bien",
-  "Bien",
   "Très bien",
+  "Bien",
+  "Assez bien",
+  "Passable",
+  "Insuffisant",
+  "À rejeter",
 ]
 
 type Distribution = {

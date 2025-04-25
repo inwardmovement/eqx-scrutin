@@ -336,7 +336,7 @@ function ThresholdSelector() {
     <DropdownMenuSub>
       <DropdownMenuSubTrigger className="gap-2">
         <Sparkles />
-        Seuil de victoire
+        Seuil de validation
       </DropdownMenuSubTrigger>
       <DropdownMenuSubContent>
         <DropdownMenuRadioGroup value={victoryThreshold}>

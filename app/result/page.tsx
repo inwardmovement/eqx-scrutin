@@ -101,7 +101,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   return null
 }
 
-// Créer le contexte pour le seuil de victoire
+// Créer le contexte pour le seuil de validation
 const VictoryThresholdContext = createContext<{
   victoryThreshold: string
   setVictoryThreshold: (value: string) => void
@@ -347,7 +347,7 @@ function ThresholdSelector() {
     <DropdownMenuSub>
       <DropdownMenuSubTrigger className="gap-2">
         <Sparkles />
-        Seuil de victoire
+        Seuil de validation
       </DropdownMenuSubTrigger>
       <DropdownMenuSubContent>
         <DropdownMenuRadioGroup value={victoryThreshold}>

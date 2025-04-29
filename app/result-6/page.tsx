@@ -47,6 +47,7 @@ import {
   MENTION_FULL,
   MENTION_SHORTCUTS,
 } from "../utils/format-6"
+import "@iframe-resizer/child"
 
 type ResultData = {
   distribution: {

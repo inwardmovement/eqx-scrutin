@@ -40,13 +40,7 @@ import {
   Sparkles,
   CodeXml,
 } from "lucide-react"
-import {
-  parseUrlData,
-  RATING_COLORS,
-  RATING_ORDER,
-  MENTION_FULL,
-  MENTION_SHORTCUTS,
-} from "../utils/format-6"
+import { parseUrlData, RATING_COLORS, RATING_ORDER } from "../utils/format-6"
 import "@iframe-resizer/child"
 
 type ResultData = {
@@ -166,7 +160,7 @@ function ResultContent() {
     currentUrl.searchParams.set("d", "embed")
     const embedUrl = currentUrl.toString()
 
-    const embedCode = `<iframe height="500" style="border: none; width: 100%" src="${embedUrl}"></iframe>`
+    const embedCode = `<iframe style="border: none; width: 100%; height: 100vh" src="${embedUrl}"></iframe>`
 
     navigator.clipboard
       .writeText(embedCode)

@@ -41,7 +41,7 @@ import {
   CodeXml,
 } from "lucide-react"
 import { parseUrlData, RATING_COLORS, RATING_ORDER } from "../utils/format-6"
-import "@iframe-resizer/child"
+import Script from "next/script"
 
 type ResultData = {
   distribution: {
@@ -643,6 +643,7 @@ export default function ResultPage() {
   return (
     <Suspense>
       <ResultContent />
+      <Script src="/iframe-resizer.child.js" />
     </Suspense>
   )
 }

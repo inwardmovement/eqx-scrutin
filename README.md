@@ -7,6 +7,9 @@
 - Archivage du résultat au format texte.
 - Intégration du résultat en `iframe`.
 
+![image](https://github.com/user-attachments/assets/336b051a-3349-40d6-bc56-fd80250154ae)
+
+
 ## Notes
 
 - La page de résultat inclut [iframe-resizer.child.js](https://github.com/davidjbradshaw/iframe-resizer/blob/master/js-dist/iframe-resizer.child.js).

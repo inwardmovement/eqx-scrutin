@@ -2,16 +2,12 @@
 
 ## Fonctionnalités
 
-- Analyse des votes (classement et distribution) selon la méthode du [jugement médian](https://fr.wikipedia.org/wiki/Jugement_usuel).
+- Analyse des votes (score, mention majoritaire, classement et distribution) selon la méthode du [jugement médian](https://fr.wikipedia.org/wiki/Jugement_usuel).
 - Configuration d'un seuil de victoire (plusieurs mentions gagnantes).
 - Archivage du résultat au format texte.
-- Intégration du résultat en `iframe`.
+- Intégration du résultat en `iframe` avec adaptation automatique de la hauteur ([info](https://gist.github.com/inwardmovement/1c6f3441e29d1ed790c9997e00d79ca0)).
 
 ![image](https://github.com/user-attachments/assets/336b051a-3349-40d6-bc56-fd80250154ae)
-
-## Notes
-
-- La page de résultat inclut [iframe-resizer.child.js](https://github.com/davidjbradshaw/iframe-resizer/blob/master/js-dist/iframe-resizer.child.js).
 
 ## Évolutions possibles
 

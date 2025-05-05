@@ -1,6 +1,6 @@
 function sendHeight() {
   const height = document.body.scrollHeight
-  window.parent.postMessage({ type: "resize", height: height }, "*")
+  window.parent.postMessage({ type: "scrutinResize", height: height }, "*")
 }
 
 // Envoie la hauteur au chargement

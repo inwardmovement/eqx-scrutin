@@ -184,7 +184,17 @@ function ResultContent() {
     currentUrl.searchParams.set("d", "embed")
     const embedUrl = currentUrl.toString()
 
-    const embedCode = `<iframe style="border: none; width: 100%; height: 100vh" src="${embedUrl}"></iframe>`
+    const embedCode = `<iframe class="scrutin" style="border: none; width: 100%; height: 100vh" src="${embedUrl}"></iframe>
+    <script>
+      window.addEventListener("message", function (event) {
+        if (event.data.type === "scrutinResize") {
+          const scrutins = document.querySelectorAll(".scrutin")
+          scrutins.forEach(scrutin => {
+            scrutin.style.height = event.data.height + "px"
+          })
+        }
+      })
+    </script>`
 
     navigator.clipboard
       .writeText(embedCode)
@@ -656,7 +666,6 @@ export default function ResultPage() {
   return (
     <Suspense>
       <ResultContent />
-      {/* <Script src="/iframe-resizer.child.js" /> */}
       <Script src="/iframe-sendHeight.js" />
     </Suspense>
   )

@@ -160,13 +160,13 @@ function ResultContent() {
     currentUrl.searchParams.set("d", "embed")
     const embedUrl = currentUrl.toString()
 
-    const embedCode = `<iframe class="scrutin" style="border: none; width: 100%; height: 100vh" src="${embedUrl}"></iframe>
+    const embedCode = `<iframe class="iframeResize" style="border: none; width: 100%; height: 100vh" src="${embedUrl}"></iframe>
     <script>
       window.addEventListener("message", function (event) {
-        if (event.data.type === "scrutinResize") {
-          const scrutins = document.querySelectorAll(".scrutin")
-          scrutins.forEach(scrutin => {
-            scrutin.style.height = event.data.height + "px"
+        if (event.data.type === "iframeHeight") {
+          const iframeResize = document.querySelectorAll(".iframeResize")
+          iframeResize.forEach(iframe => {
+            iframe.style.height = event.data.height + "px"
           })
         }
       })
@@ -653,7 +653,7 @@ export default function ResultPage() {
   return (
     <Suspense>
       <ResultContent />
-      <Script src="/iframe-sendHeight.js" />
+      <Script src="/sendIframeHeight.js" />
     </Suspense>
   )
 }

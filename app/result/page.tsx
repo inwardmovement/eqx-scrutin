@@ -656,7 +656,8 @@ export default function ResultPage() {
   return (
     <Suspense>
       <ResultContent />
-      <Script src="/iframe-resizer.child.js" />
+      {/* <Script src="/iframe-resizer.child.js" /> */}
+      <Script src="/iframe-sendHeight.js" />
     </Suspense>
   )
 }

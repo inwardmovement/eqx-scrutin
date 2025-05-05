@@ -184,7 +184,7 @@ function ResultContent() {
     currentUrl.searchParams.set("d", "embed")
     const embedUrl = currentUrl.toString()
 
-    const embedCode = `<iframe class="iframeResize" style="border: none; width: 100%; height: 100vh" src="${embedUrl}"></iframe>
+    const embedCode = `<iframe class="iframeResize" style="border: none; width: 100%; height: 500px" src="${embedUrl}"></iframe>
     <script>
       window.addEventListener("message", function (event) {
         if (event.data.type === "iframeHeight") {

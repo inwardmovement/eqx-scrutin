@@ -1,12 +1,9 @@
-"use client"
-
 import type React from "react"
 import "./globals.css"
 import type { Metadata } from "next"
 import { Inter } from "next/font/google"
-import { Body } from "./components/body"
-import { useSearchParams } from "next/navigation"
 import { Suspense } from "react"
+import { ClientLayout } from "./components/client-layout"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -16,21 +13,6 @@ export const metadata: Metadata = {
   generator: "Next.js",
 }
 
-function LayoutContent({ children }: { children: React.ReactNode }) {
-  const searchParams = useSearchParams()
-  const isEmbedded = searchParams.get("d") === "embed"
-
-  return (
-    <html
-      lang="fr"
-      suppressHydrationWarning
-      className={inter.className}
-      style={isEmbedded ? { overflow: "hidden" } : undefined}>
-      <Body>{children}</Body>
-    </html>
-  )
-}
-
 export default function RootLayout({
   children,
 }: {
@@ -38,7 +20,7 @@ export default function RootLayout({
 }) {
   return (
     <Suspense>
-      <LayoutContent>{children}</LayoutContent>
+      <ClientLayout className={inter.className}>{children}</ClientLayout>
     </Suspense>
   )
 }

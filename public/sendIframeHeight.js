@@ -1,5 +1,5 @@
 function sendIframeHeight() {
-  const height = document.documentElement.scrollHeight + 5
+  const height = document.documentElement.scrollHeight
   window.parent.postMessage({ type: "iframeHeight", height: height }, "*")
 }
 

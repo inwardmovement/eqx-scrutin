@@ -1,3 +1,5 @@
+import { type ScrutinData, type Distribution, type Choice } from "../actions"
+
 // Mapping des mentions vers leurs abréviations
 export const MENTION_SHORTCUTS: { [key: string]: string } = {
   Excellent: "E",
@@ -14,25 +16,6 @@ export const MENTION_FULL: { [key: string]: string } = {
   P: "Passable",
   I: "Insuffisant",
   R: "À rejeter",
-}
-
-type Distribution = {
-  [mention: string]: number
-}
-
-type Choice = {
-  mention: string
-  score: string
-  distribution: Distribution
-}
-
-type ScrutinData = {
-  distribution: {
-    [choice: string]: Choice
-  }
-  winner: string
-  winningMention: string
-  details: { [key: string]: string }
 }
 
 // Convertit les données du scrutin en format URL
@@ -111,9 +94,10 @@ export function parseUrlData(urlData: string): ScrutinData {
   })
 
   // Calculer le nombre de votants à partir du premier choix
-  const totalVotes = Object.values(distribution)[0]?.distribution
-    ? Object.values(Object.values(distribution)[0].distribution).reduce(
-        (a, b) => a + b,
+  const firstChoice = Object.values(distribution)[0]
+  const totalVotes = firstChoice
+    ? Object.values(firstChoice.distribution).reduce(
+        (a: number, b: number) => a + b,
         0,
       )
     : 0

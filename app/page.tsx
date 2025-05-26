@@ -1,7 +1,13 @@
 "use client"
 
 import Image from "next/image"
-import { useState, useEffect, useLayoutEffect, Suspense } from "react"
+import {
+  useState,
+  useEffect,
+  useLayoutEffect,
+  Suspense,
+  useCallback,
+} from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import {
   Card,
@@ -19,6 +25,22 @@ import Link from "next/link"
 import { formatDataForUrl } from "./utils/url-format"
 import { formatDataForUrl as formatDataForUrl6 } from "./utils/url-format-6"
 import { Checkbox } from "@/components/ui/checkbox"
+import type { ScrutinData } from "./actions"
+
+type ResultData = {
+  distribution: {
+    [choice: string]: {
+      mention: string
+      score: string
+      distribution: {
+        [mention: string]: number
+      }
+    }
+  }
+  winner?: string
+  winningMention?: string
+  details?: { [key: string]: string }
+}
 
 // Composant séparé pour gérer les paramètres d'URL
 function ErrorHandler() {
@@ -54,82 +76,90 @@ function HomeContent() {
   const [isVersion6, setIsVersion6] = useState(false)
   const router = useRouter()
 
+  const handleSubmit = useCallback(
+    async (e: React.FormEvent) => {
+      e.preventDefault()
+      setIsLoading(true)
+
+      if (!file) {
+        toast.error("Aucun fichier sélectionné", {
+          description: "Veuillez sélectionner un fichier CSV à analyser",
+        })
+        setIsLoading(false)
+        return
+      }
+
+      try {
+        const formData = new FormData()
+        formData.append("document", file)
+        formData.append("isVersion6", isVersion6.toString())
+
+        const result = await (isVersion6
+          ? processDocument6(formData)
+          : processDocument(formData))
+        if (!result.success) {
+          const errorMessage = result.error?.toLowerCase() || ""
+
+          // Gestion des erreurs avec des messages plus clairs
+          if (
+            errorMessage.includes("vote invalide") ||
+            errorMessage.includes("mention invalide")
+          ) {
+            if (isVersion6) {
+              toast.error("Format de fichier incompatible", {
+                description:
+                  'Ce fichier utilise le format à 5 mentions : décocher la case "Version 6 mentions".',
+              })
+            } else {
+              toast.error("Format de fichier incompatible", {
+                description:
+                  "Ce fichier utilise le format à 6 mentions : cocher la case correspondante.",
+              })
+            }
+          } else {
+            toast.error("Erreur lors du traitement du fichier", {
+              description: result.error,
+            })
+          }
+          setFile(null)
+          setIsLoading(false)
+          return
+        }
+
+        if (!result.data) {
+          toast.error("Erreur lors du traitement du fichier", {
+            description: "Aucune donnée n'a été générée",
+          })
+          setFile(null)
+          setIsLoading(false)
+          return
+        }
+
+        const urlData = isVersion6
+          ? formatDataForUrl6(result.data)
+          : formatDataForUrl(result.data)
+        router.push(`/result${isVersion6 ? "-6" : ""}?data=${urlData}`)
+      } catch (err) {
+        console.error("Erreur lors du traitement du fichier:", err)
+        toast.error("Erreur lors du traitement du fichier", {
+          description:
+            err instanceof Error
+              ? err.message
+              : "Une erreur inattendue s'est produite",
+        })
+        setFile(null)
+        setIsLoading(false)
+      }
+    },
+    [file, isVersion6, router],
+  )
+
   // Soumettre le formulaire quand le fichier est collecté
   useEffect(() => {
     if (file && !isLoading) {
-      handleSubmit()
+      handleSubmit(new Event("submit") as unknown as React.FormEvent)
     }
-  }, [file])
-
-  const handleSubmit = async () => {
-    if (!file) return
-
-    setIsLoading(true)
-
-    try {
-      const formData = new FormData()
-      formData.append("document", file)
-
-      const result = await (isVersion6 ? processDocument6 : processDocument)(
-        formData,
-      )
-
-      if (result.success && result.data) {
-        const urlData = (isVersion6 ? formatDataForUrl6 : formatDataForUrl)(
-          result.data,
-        )
-        router.push(`/result${isVersion6 ? "-6" : ""}?data=${urlData}`)
-      } else {
-        console.error("Error processing file:", result.error)
-        const errorMessage = result.error?.toLowerCase() || ""
-        if (
-          errorMessage.includes("vote invalide") ||
-          errorMessage.includes("mention invalide")
-        ) {
-          if (isVersion6) {
-            toast.error("Format de fichier incompatible", {
-              description:
-                'Ce fichier utilise le format à 5 mentions : décocher la case "Version 6 mentions".',
-            })
-          } else {
-            toast.error("Format de fichier incompatible", {
-              description:
-                "Ce fichier utilise le format à 6 mentions : cocher la case correspondante.",
-            })
-          }
-        } else if (errorMessage.includes("ligne invalide")) {
-          toast.error("Format de fichier incorrect", {
-            description: result.error,
-          })
-        } else if (errorMessage.includes("aucun document")) {
-          toast.error("Aucun fichier sélectionné", {
-            description: "Veuillez sélectionner un fichier CSV à analyser",
-          })
-        } else {
-          toast.error("Erreur lors du traitement du fichier", {
-            description: result.error,
-          })
-        }
-        setIsLoading(false)
-      }
-    } catch (error) {
-      console.error("Unexpected error:", error)
-      toast.error("Erreur lors du traitement du fichier", {
-        description:
-          error instanceof Error
-            ? error.message
-            : "Une erreur inattendue s'est produite",
-      })
-      setIsLoading(false)
-    }
-  }
-
-  // Gérer la fin du chargement après la navigation
-  useEffect(() => {
-    return () => {
-      setIsLoading(false)
-    }
-  }, [])
+  }, [file, isLoading, handleSubmit])
 
   return (
     <main className="flex flex-col items-center p-4 md:mt-8">
@@ -199,7 +229,11 @@ function HomeContent() {
                     type="file"
                     accept=".csv"
                     className="hidden"
-                    onChange={e => setFile(e.target.files?.[0] || null)}
+                    onChange={e => {
+                      setFile(e.target.files?.[0] || null)
+                      // Réinitialiser la valeur de l'input pour permettre la sélection du même fichier
+                      e.target.value = ""
+                    }}
                     disabled={isLoading}
                   />
                 </label>

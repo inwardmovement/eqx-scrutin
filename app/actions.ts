@@ -2,7 +2,34 @@
 
 import Papa from "papaparse"
 
-export async function processDocument(formData: FormData) {
+export type Distribution = {
+  [mention: string]: number
+}
+
+export type Choice = {
+  mention: string
+  score: string
+  distribution: Distribution
+}
+
+export type ScrutinData = {
+  distribution: {
+    [choice: string]: Choice
+  }
+  winner: string
+  winningMention: string
+  details: { [key: string]: string }
+}
+
+export type ProcessDocumentResponse = {
+  success: boolean
+  data?: ScrutinData
+  error?: string
+}
+
+export async function processDocument(
+  formData: FormData,
+): Promise<ProcessDocumentResponse> {
   try {
     const document = formData.get("document") as File
 
@@ -44,6 +71,40 @@ export async function processDocument(formData: FormData) {
       // Get choices from header
       const choices = lines[0]
 
+      // Vérifier le format du fichier (5 ou 6 mentions)
+      const isVersion6 = formData.get("isVersion6") === "true"
+
+      // Construire l'ensemble des mentions sur toutes les lignes de votes
+      const allMentions = new Set<string>()
+      for (let i = 1; i < lines.length; i++) {
+        for (const mention of lines[i]) {
+          allMentions.add(mention)
+        }
+      }
+      const mentionCount = allMentions.size
+
+      // Vérifier la cohérence entre le format du fichier et l'option sélectionnée
+      if (mentionCount === 6 && !isVersion6) {
+        return {
+          success: false,
+          error:
+            "Ce fichier utilise le format à 6 mentions : cocher la case correspondante.",
+        }
+      }
+      if (mentionCount === 5 && isVersion6) {
+        return {
+          success: false,
+          error:
+            'Ce fichier utilise le format à 5 mentions : décocher la case "Version 6 mentions".',
+        }
+      }
+      if (mentionCount !== 5 && mentionCount !== 6) {
+        return {
+          success: false,
+          error: `Format de fichier invalide : ${mentionCount} mentions trouvées. Le fichier doit contenir exactement 5 ou 6 mentions.`,
+        }
+      }
+
       // Initialize distribution data
       const distribution: { [key: string]: any } = {}
       const mentionCounts: { [key: string]: { [mention: string]: number } } = {}
@@ -51,22 +112,27 @@ export async function processDocument(formData: FormData) {
       // Initialize counts for each choice
       choices.forEach(choice => {
         mentionCounts[choice] = {
-          Excellent: 0,
-          Bien: 0,
-          Passable: 0,
-          Insuffisant: 0,
           "À rejeter": 0,
+          Insuffisant: 0,
+          Passable: 0,
+          Bien: 0,
+          ...(isVersion6
+            ? { "Assez bien": 0, "Très bien": 0 }
+            : { Excellent: 0 }),
         }
       })
 
       // Ordre des mentions du plus faible au plus fort
-      const mentionOrder = [
-        "À rejeter",
-        "Insuffisant",
-        "Passable",
-        "Bien",
-        "Excellent",
-      ]
+      const mentionOrder = isVersion6
+        ? [
+            "À rejeter",
+            "Insuffisant",
+            "Passable",
+            "Bien",
+            "Assez bien",
+            "Très bien",
+          ]
+        : ["À rejeter", "Insuffisant", "Passable", "Bien", "Excellent"]
 
       // Vérification que toutes les mentions sont valides
       const validMentions = new Set(mentionOrder)
@@ -199,10 +265,12 @@ export async function processDocument(formData: FormData) {
     }
   } catch (error) {
     console.error("Error processing document:", error)
+    if (error instanceof Error) {
+      return { success: false, error: error.message }
+    }
     return {
       success: false,
-      error:
-        error instanceof Error ? error.message : "Error processing document",
+      error: "Erreur inconnue lors du traitement du fichier",
     }
   }
 }

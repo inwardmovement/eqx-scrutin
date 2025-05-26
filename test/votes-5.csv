@@ -1,0 +1,23 @@
+Choix A,Choix B,Choix C,Choix D
+Excellent,Bien,À rejeter,Passable
+Bien,Insuffisant,Excellent,Passable
+Insuffisant,Passable,Excellent,Bien
+Bien,Passable,Excellent,Bien
+Bien,Excellent,Excellent,Insuffisant
+Insuffisant,Excellent,Excellent,Insuffisant
+Bien,Excellent,Bien,Insuffisant
+Bien,Excellent,Passable,À rejeter
+Insuffisant,Excellent,Bien,À rejeter
+Bien,À rejeter,À rejeter,À rejeter
+Passable,À rejeter,Insuffisant,Insuffisant
+À rejeter,À rejeter,À rejeter,Bien
+Insuffisant,Excellent,Excellent,À rejeter
+Bien,Excellent,À rejeter,Bien
+À rejeter,Excellent,Passable,Passable
+Bien,Excellent,Passable,Excellent
+Passable,À rejeter,Bien,À rejeter
+Excellent,Excellent,À rejeter,À rejeter
+À rejeter,Excellent,À rejeter,À rejeter
+À rejeter,À rejeter,À rejeter,Passable
+Passable,Excellent,À rejeter,À rejeter
+À rejeter,Excellent,Insuffisant,À rejeter

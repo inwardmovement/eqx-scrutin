@@ -40,7 +40,7 @@ import {
   Sparkles,
   CodeXml,
 } from "lucide-react"
-import { parseUrlData } from "../utils/format"
+import { parseUrlData } from "../utils/url-format"
 import Script from "next/script"
 
 type ResultData = {

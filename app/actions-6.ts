@@ -1,6 +1,6 @@
 "use server"
 
-import { formatDataForUrl } from "./utils/format-6"
+import Papa from "papaparse"
 
 export async function processDocument(formData: FormData) {
   try {
@@ -16,14 +16,18 @@ export async function processDocument(formData: FormData) {
       const decoder = new TextDecoder("utf-8")
       fileContent = decoder.decode(arrayBuffer)
 
-      // Nettoyer le contenu du fichier
-      fileContent = fileContent
-        .replace(/\r\n/g, "\n")
-        .replace(/\r/g, "\n")
-        .trim()
+      // Parse CSV content using PapaParse
+      const parseResult = Papa.parse(fileContent, {
+        skipEmptyLines: true,
+        transformHeader: header => header.trim(),
+        transform: value => value.trim(),
+      })
 
-      const lines = fileContent.split("\n").filter(line => line.trim())
+      if (parseResult.errors.length > 0) {
+        throw new Error(parseResult.errors[0].message)
+      }
 
+      const lines = parseResult.data as string[][]
       if (lines.length < 2) {
         throw new Error(
           "Le fichier CSV doit contenir au moins un en-tête et une ligne de données",
@@ -31,10 +35,7 @@ export async function processDocument(formData: FormData) {
       }
 
       // Nettoyer les choix
-      const choices = lines[0]
-        .split(",")
-        .map(choice => choice.trim())
-        .filter(choice => choice.length > 0)
+      const choices = lines[0].filter(choice => choice.length > 0)
 
       if (choices.length === 0) {
         throw new Error("L'en-tête ne contient aucun choix valide")
@@ -104,7 +105,7 @@ export async function processDocument(formData: FormData) {
       }
 
       for (let i = 1; i < lines.length; i++) {
-        const votes = lines[i].split(",").map(vote => vote.trim())
+        const votes = lines[i]
 
         if (votes.length !== choices.length) {
           throw new Error(

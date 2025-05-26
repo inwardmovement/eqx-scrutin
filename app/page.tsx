@@ -16,8 +16,8 @@ import Logo from "@/public/logo-eqx.webp"
 import { processDocument } from "./actions"
 import { processDocument as processDocument6 } from "./actions-6"
 import Link from "next/link"
-import { formatDataForUrl } from "./utils/format"
-import { formatDataForUrl as formatDataForUrl6 } from "./utils/format-6"
+import { formatDataForUrl } from "./utils/url-format"
+import { formatDataForUrl as formatDataForUrl6 } from "./utils/url-format-6"
 import { Checkbox } from "@/components/ui/checkbox"
 
 // Composant séparé pour gérer les paramètres d'URL

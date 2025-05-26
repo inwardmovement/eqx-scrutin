@@ -40,7 +40,11 @@ import {
   Sparkles,
   CodeXml,
 } from "lucide-react"
-import { parseUrlData, RATING_COLORS, RATING_ORDER } from "../utils/format-6"
+import {
+  parseUrlData,
+  RATING_COLORS,
+  RATING_ORDER,
+} from "../utils/url-format-6"
 import Script from "next/script"
 
 type ResultData = {

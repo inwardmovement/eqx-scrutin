@@ -1,5 +1,7 @@
 "use server"
 
+import Papa from "papaparse"
+
 export async function processDocument(formData: FormData) {
   try {
     const document = formData.get("document") as File
@@ -21,8 +23,18 @@ export async function processDocument(formData: FormData) {
       fileContent = decoder.decode(arrayBuffer)
       console.log("File content:", fileContent)
 
-      // Parse CSV content
-      const lines = fileContent.split(/\r?\n/).filter(line => line.trim())
+      // Parse CSV content using PapaParse
+      const parseResult = Papa.parse(fileContent, {
+        skipEmptyLines: true,
+        transformHeader: header => header.trim(),
+        transform: value => value.trim(),
+      })
+
+      if (parseResult.errors.length > 0) {
+        throw new Error(parseResult.errors[0].message)
+      }
+
+      const lines = parseResult.data as string[][]
       if (lines.length < 2) {
         throw new Error(
           "Le fichier CSV doit contenir au moins un en-tête et une ligne de données",
@@ -30,7 +42,7 @@ export async function processDocument(formData: FormData) {
       }
 
       // Get choices from header
-      const choices = lines[0].split(",").map(choice => choice.trim())
+      const choices = lines[0]
 
       // Initialize distribution data
       const distribution: { [key: string]: any } = {}
@@ -106,7 +118,7 @@ export async function processDocument(formData: FormData) {
 
       // Count mentions for each choice
       for (let i = 1; i < lines.length; i++) {
-        const votes = lines[i].split(",").map(vote => vote.trim())
+        const votes = lines[i]
         if (votes.length !== choices.length) {
           throw new Error(
             `Ligne ${i + 1} invalide: nombre de votes incorrect (${votes.length} au lieu de ${choices.length})`,
@@ -187,6 +199,10 @@ export async function processDocument(formData: FormData) {
     }
   } catch (error) {
     console.error("Error processing document:", error)
-    return { success: false, error: "Error processing document" }
+    return {
+      success: false,
+      error:
+        error instanceof Error ? error.message : "Error processing document",
+    }
   }
 }

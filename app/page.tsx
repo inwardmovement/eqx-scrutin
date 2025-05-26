@@ -80,13 +80,8 @@ function HomeContent() {
         )
         router.push(`/result${isVersion6 ? "-6" : ""}?data=${urlData}`)
       } else {
-        console.error("Error processing file")
-        toast.error("Erreur lors du traitement du fichier")
-        setIsLoading(false)
-      }
-    } catch (error) {
-      if (error instanceof Error) {
-        const errorMessage = error.message.toLowerCase()
+        console.error("Error processing file:", result.error)
+        const errorMessage = result.error?.toLowerCase() || ""
         if (
           errorMessage.includes("vote invalide") ||
           errorMessage.includes("mention invalide")
@@ -94,17 +89,17 @@ function HomeContent() {
           if (isVersion6) {
             toast.error("Format de fichier incompatible", {
               description:
-                "Ce fichier utilise le format à 5 mentions (Excellent, Bien, Passable, Insuffisant, À rejeter). Décoche la case 'Version 6 mentions' pour l'analyser.",
+                'Ce fichier utilise le format à 5 mentions : décocher la case "Version 6 mentions".',
             })
           } else {
             toast.error("Format de fichier incompatible", {
               description:
-                "Ce fichier utilise le format à 6 mentions (Très bien, Assez bien, Bien, Passable, Insuffisant, À rejeter). Coche la case 'Version 6 mentions' pour l'analyser.",
+                "Ce fichier utilise le format à 6 mentions : cocher la case correspondante.",
             })
           }
         } else if (errorMessage.includes("ligne invalide")) {
           toast.error("Format de fichier incorrect", {
-            description: error.message,
+            description: result.error,
           })
         } else if (errorMessage.includes("aucun document")) {
           toast.error("Aucun fichier sélectionné", {
@@ -112,14 +107,19 @@ function HomeContent() {
           })
         } else {
           toast.error("Erreur lors du traitement du fichier", {
-            description: error.message,
+            description: result.error,
           })
         }
-      } else {
-        toast.error("Erreur lors du traitement du fichier", {
-          description: "Format de fichier invalide",
-        })
+        setIsLoading(false)
       }
+    } catch (error) {
+      console.error("Unexpected error:", error)
+      toast.error("Erreur lors du traitement du fichier", {
+        description:
+          error instanceof Error
+            ? error.message
+            : "Une erreur inattendue s'est produite",
+      })
       setIsLoading(false)
     }
   }

@@ -362,7 +362,7 @@ function ThresholdSelector() {
       params.set("s", sValue)
       params.delete("n")
     }
-    const queryString = params.toString().replace(/%20/g, "+")
+    const queryString = params.toString().replace(/\+/g, "%20")
     router.push(`?${queryString}`, { scroll: false })
   }
 

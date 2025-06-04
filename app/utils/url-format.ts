@@ -21,8 +21,8 @@ export const MENTION_FULL: { [key: string]: string } = {
 // Convertit les données du scrutin en format URL
 export function formatDataForUrl(data: ScrutinData): string {
   const choices = Object.entries(data.distribution).map(([name, choice]) => {
-    // Encode le nom du choix et remplace les %20 par des +
-    const encodedName = encodeURIComponent(name).replace(/%20/g, "+")
+    // Encode le nom du choix
+    const encodedName = encodeURIComponent(name)
 
     // Obtient l'abréviation de la mention majoritaire
     const mentionShortcut = MENTION_SHORTCUTS[choice.mention]

@@ -92,7 +92,7 @@ const VictoryThresholdContext = createContext<{
   victoryThreshold: string
   setVictoryThreshold: (value: string) => void
 }>({
-  victoryThreshold: "meilleur_score",
+  victoryThreshold: "top_1",
   setVictoryThreshold: () => {},
 })
 
@@ -116,7 +116,7 @@ function ResultContent() {
     if (s === "2") return "bien"
     if (s === "3") return "assez_bien"
     if (s === "4") return "passable"
-    return "meilleur_score"
+    return "top_1"
   })
   const isEmbedded = searchParams.get("d") === "embed"
 
@@ -128,7 +128,7 @@ function ResultContent() {
     else if (s === "2") setVictoryThreshold("bien")
     else if (s === "3") setVictoryThreshold("assez_bien")
     else if (s === "4") setVictoryThreshold("passable")
-    else setVictoryThreshold("meilleur_score")
+    else setVictoryThreshold("top_1")
   }, [searchParams])
 
   useEffect(() => {
@@ -342,12 +342,13 @@ function ThresholdSelector() {
   // Fonction pour mettre à jour l'URL avec le nouveau seuil
   const updateThresholdInUrl = (value: string) => {
     const params = new URLSearchParams(searchParams.toString())
-    if (value === "meilleur_score") {
-      params.delete("s")
-      params.delete("n")
-    } else if (value.startsWith("top_")) {
+    if (value.startsWith("top_")) {
       const n = value.split("_")[1]
-      params.set("n", n)
+      if (n === "1") {
+        params.delete("n")
+      } else {
+        params.set("n", n)
+      }
       params.delete("s")
     } else {
       const sValue =
@@ -376,18 +377,9 @@ function ThresholdSelector() {
       </DropdownMenuSubTrigger>
       <DropdownMenuSubContent>
         <DropdownMenuRadioGroup value={victoryThreshold}>
-          <DropdownMenuRadioItem
-            value="meilleur_score"
-            onSelect={event => {
-              event.preventDefault()
-              setVictoryThreshold("meilleur_score")
-              updateThresholdInUrl("meilleur_score")
-            }}>
-            Meilleur score
-          </DropdownMenuRadioItem>
           <DropdownMenuSub>
             <DropdownMenuSubTrigger className="gap-2">
-              <em>N</em> meilleurs scores
+              <em>N</em> meilleur(s) score(s)
             </DropdownMenuSubTrigger>
             <DropdownMenuSubContent>
               {Array.from({ length: numberOfChoices }, (_, i) => i + 1).map(
@@ -552,7 +544,7 @@ function ResultDisplay({ data }: { data: ResultData }) {
     .sort((a, b) => parseFloat(b.score) - parseFloat(a.score))
 
   const isWinner = (choice: (typeof sortedChoices)[0]) => {
-    if (victoryThreshold === "meilleur_score") {
+    if (victoryThreshold === "top_1") {
       const maxScore = Math.max(...sortedChoices.map(c => parseFloat(c.score)))
       return parseFloat(choice.score) === maxScore
     }

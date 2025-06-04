@@ -127,6 +127,8 @@ function ResultContent() {
   )
   const [victoryThreshold, setVictoryThreshold] = useState(() => {
     const s = searchParams.get("s")
+    const n = searchParams.get("n")
+    if (n) return `top_${n}`
     if (s === "1") return "excellent"
     if (s === "2") return "bien"
     if (s === "3") return "passable"
@@ -137,7 +139,9 @@ function ResultContent() {
   // Mettre à jour le seuil quand les paramètres d'URL changent
   useEffect(() => {
     const s = searchParams.get("s")
-    if (s === "1") setVictoryThreshold("excellent")
+    const n = searchParams.get("n")
+    if (n) setVictoryThreshold(`top_${n}`)
+    else if (s === "1") setVictoryThreshold("excellent")
     else if (s === "2") setVictoryThreshold("bien")
     else if (s === "3") setVictoryThreshold("passable")
     else setVictoryThreshold("meilleur_score")
@@ -338,20 +342,43 @@ function ThresholdSelector() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const { victoryThreshold, setVictoryThreshold } = useVictoryThreshold()
+  const [data, setData] = useState<ResultData | null>(null)
+
+  // Récupérer les données du scrutin
+  useEffect(() => {
+    const urlData = searchParams.get("data")
+    if (urlData) {
+      try {
+        const parsedData = parseUrlData(urlData)
+        setData(parsedData)
+      } catch (error) {
+        console.error("Error parsing data:", error)
+      }
+    }
+  }, [searchParams])
 
   // Fonction pour mettre à jour l'URL avec le nouveau seuil
   const updateThresholdInUrl = (value: string) => {
     const params = new URLSearchParams(searchParams.toString())
     if (value === "meilleur_score") {
       params.delete("s")
+      params.delete("n")
+    } else if (value.startsWith("top_")) {
+      const n = value.split("_")[1]
+      params.set("n", n)
+      params.delete("s")
     } else {
       const sValue = value === "excellent" ? "1" : value === "bien" ? "2" : "3"
       params.set("s", sValue)
+      params.delete("n")
     }
     // Utiliser encodeURIComponent avec remplacement des %20 par des +
     const queryString = params.toString().replace(/%20/g, "+")
     router.push(`?${queryString}`, { scroll: false })
   }
+
+  // Obtenir le nombre de choix dans le scrutin
+  const numberOfChoices = data ? Object.keys(data.distribution).length : 0
 
   return (
     <DropdownMenuSub>
@@ -375,7 +402,20 @@ function ThresholdSelector() {
               <em>N</em> meilleurs scores
             </DropdownMenuSubTrigger>
             <DropdownMenuSubContent>
-              <DropdownMenuSeparator />
+              {Array.from({ length: numberOfChoices }, (_, i) => i + 1).map(
+                n => (
+                  <DropdownMenuRadioItem
+                    key={n}
+                    value={`top_${n}`}
+                    onSelect={event => {
+                      event.preventDefault()
+                      setVictoryThreshold(`top_${n}`)
+                      updateThresholdInUrl(`top_${n}`)
+                    }}>
+                    {n}
+                  </DropdownMenuRadioItem>
+                ),
+              )}
             </DropdownMenuSubContent>
           </DropdownMenuSub>
           <DropdownMenuSeparator />
@@ -506,6 +546,7 @@ function LoadingContent() {
 
 function ResultDisplay({ data }: { data: ResultData }) {
   const { victoryThreshold } = useVictoryThreshold()
+  const searchParams = useSearchParams()
 
   // Trier les choix par score
   const sortedChoices = Object.entries(data.distribution)
@@ -520,6 +561,12 @@ function ResultDisplay({ data }: { data: ResultData }) {
     if (victoryThreshold === "meilleur_score") {
       const maxScore = Math.max(...sortedChoices.map(c => parseFloat(c.score)))
       return parseFloat(choice.score) === maxScore
+    }
+
+    if (victoryThreshold.startsWith("top_")) {
+      const n = parseInt(victoryThreshold.split("_")[1])
+      const topNChoices = sortedChoices.slice(0, n)
+      return topNChoices.some(c => c.name === choice.name)
     }
 
     // Convertir le seuil en indice dans l'ordre des mentions

@@ -29,6 +29,7 @@ import {
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
   DropdownMenuSeparator,
+  DropdownMenuLabel,
 } from "@/components/ui/dropdown-menu"
 import {
   Link2,
@@ -356,7 +357,7 @@ function ThresholdSelector() {
     <DropdownMenuSub>
       <DropdownMenuSubTrigger className="gap-2">
         <Sparkles />
-        Seuil de validation
+        Validation
       </DropdownMenuSubTrigger>
       <DropdownMenuSubContent>
         <DropdownMenuRadioGroup value={victoryThreshold}>
@@ -369,7 +370,16 @@ function ThresholdSelector() {
             }}>
             Meilleur score
           </DropdownMenuRadioItem>
+          <DropdownMenuSub>
+            <DropdownMenuSubTrigger className="gap-2">
+              <em>N</em> meilleurs scores
+            </DropdownMenuSubTrigger>
+            <DropdownMenuSubContent>
+              <DropdownMenuSeparator />
+            </DropdownMenuSubContent>
+          </DropdownMenuSub>
           <DropdownMenuSeparator />
+          <DropdownMenuLabel>Seuil</DropdownMenuLabel>
           <DropdownMenuRadioItem
             value="excellent"
             onSelect={event => {

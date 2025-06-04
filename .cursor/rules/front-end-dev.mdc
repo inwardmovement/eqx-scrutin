@@ -37,7 +37,6 @@ Follow these rules when you write code:
 - Use descriptive variable and function/const names. Also, event functions should be named with a “handle” prefix, like “handleClick” for onClick and “handleKeyDown” for onKeyDown.
 - Implement accessibility features on elements. For example, a tag should have a tabindex=“0”, aria-label, on:click, and on:keydown, and similar attributes.
 - Use consts instead of functions, for example, “const toggle = () =>”. Also, define a type if possible.
-- Installer les modules avec pnpm.
 - Écrire les commentaires en français.
 - Utilise des client components seulement quand c'est nécessaire, le plus bas possible dans l'arborescence des composants.
 - Quand c'est possible, évite d'utiliser un délai arbitraire pour déclencher une action, base-toi plutôt sur des évènements, ou sur le cycle de vie des composants.

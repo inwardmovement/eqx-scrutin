@@ -60,8 +60,8 @@ type ScrutinData = {
 // Convertit les données du scrutin en format URL
 export function formatDataForUrl(data: ScrutinData): string {
   const choices = Object.entries(data.distribution).map(([name, choice]) => {
-    // Encoder tous les caractères spéciaux
-    const encodedName = encodeURIComponent(name)
+    // Encoder tous les caractères spéciaux et remplacer %20 par +
+    const encodedName = encodeURIComponent(name).replace(/%20/g, "+")
 
     // Vérifier que la mention est valide
     if (!MENTION_SHORTCUTS[choice.mention]) {

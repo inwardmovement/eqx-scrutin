@@ -194,7 +194,7 @@ function ResultContent() {
     } else {
       textToCopy = "Le scrutin a validé les options suivantes :\n"
       winningChoices.forEach((choice, index) => {
-        textToCopy += `#${index + 1} "${choice.name}" avec la mention ${choice.mention} (${choice.score})\n`
+        textToCopy += `#${index + 1} "${choice.name}" avec la mention ${choice.mention} (${choice.score})${index < winningChoices.length - 1 ? "\n" : ""}`
       })
     }
 

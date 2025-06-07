@@ -8,8 +8,8 @@ import { ClientLayout } from "./components/client-layout"
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "Scrutin au jugement médian",
-  description: "Analyse des votes selon la méthode du jugement médian",
+  title: "Scrutin | Équinoxe",
+  description: "Analyse des votes au jugement médian",
   generator: "Next.js",
 }
 

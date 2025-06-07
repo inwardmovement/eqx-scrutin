@@ -172,8 +172,53 @@ function ResultContent() {
 
   // Handle copying text
   const handleCopyText = () => {
+    if (!data) return
+
+    // Trier les choix par score
+    const sortedChoices = Object.entries(data.distribution)
+      .map(([name, data]) => ({
+        name,
+        ...data,
+      }))
+      .sort((a, b) => parseFloat(b.score) - parseFloat(a.score))
+
+    // Filtrer les choix gagnants
+    const winningChoices = sortedChoices.filter(choice => {
+      if (victoryThreshold === "top_1") {
+        const maxScore = Math.max(
+          ...sortedChoices.map(c => parseFloat(c.score)),
+        )
+        return parseFloat(choice.score) === maxScore
+      }
+
+      if (victoryThreshold.startsWith("top_")) {
+        const n = parseInt(victoryThreshold.split("_")[1])
+        const topNChoices = sortedChoices.slice(0, n)
+        return topNChoices.some(c => c.name === choice.name)
+      }
+
+      const thresholdIndex = ratingOrder.findIndex(
+        mention => mention.toLowerCase() === victoryThreshold,
+      )
+      const choiceIndex = ratingOrder.findIndex(
+        mention => mention === choice.mention,
+      )
+      return choiceIndex <= thresholdIndex
+    })
+
+    let textToCopy = ""
+    if (winningChoices.length === 1) {
+      const winner = winningChoices[0]
+      textToCopy = `Le scrutin a validé l'option "${winner.name}" avec la mention ${winner.mention} (${winner.score}).`
+    } else {
+      textToCopy = "Le scrutin a validé les options suivantes :\n"
+      winningChoices.forEach((choice, index) => {
+        textToCopy += `#${index + 1} "${choice.name}" avec la mention ${choice.mention} (${choice.score})\n`
+      })
+    }
+
     navigator.clipboard
-      .writeText("Résultat en texte")
+      .writeText(textToCopy)
       .then(() => {
         setCopyStatus("success")
       })

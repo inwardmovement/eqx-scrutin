@@ -9,3 +9,9 @@
 # Développement
 
 - `pnpm i` pour installer les dépendances puis `npm run dev` pour développer en local.
+- Recommandation d'utiliser Cursor (voir [front-end-dev.mdc](.cursor/rules/front-end-dev.mdc))
+
+# Hébergement
+
+- L'app est actuellement hébergée sur [eqx-scrutin.vercel.app](https://eqx-scrutin.vercel.app/) (hébergement perso de Victor Massé).
+- L'app devrait plutôt à terme être hébergée sur le serveur Équinoxe.

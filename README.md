@@ -14,4 +14,4 @@
 # Hébergement
 
 - L'app est actuellement hébergée sur [eqx-scrutin.vercel.app](https://eqx-scrutin.vercel.app/) (hébergement perso de Victor Massé).
-- L'app devrait plutôt à terme être hébergée sur le serveur Équinoxe.
+- L'app devrait plutôt à terme être hébergée par Équinoxe.

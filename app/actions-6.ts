@@ -21,6 +21,7 @@ export async function processDocument(formData: FormData) {
         skipEmptyLines: true,
         transformHeader: header => header.trim(),
         transform: value => value.trim(),
+        comments: "#",
       })
 
       if (parseResult.errors.length > 0) {

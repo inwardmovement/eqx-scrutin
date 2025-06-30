@@ -257,7 +257,7 @@ function HomeContent() {
               </Link>
             </li>
           </ul>
-          <div className="flex items-center space-x-2 pt-4">
+          {/* <div className="flex items-center space-x-2 pt-4">
             <Checkbox
               id="version6"
               className="text-muted-foreground"
@@ -269,7 +269,7 @@ function HomeContent() {
               className="font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
               Version 6 mentions
             </label>
-          </div>
+          </div> */}
         </CardFooter>
       </Card>
     </main>

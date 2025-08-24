@@ -8,6 +8,8 @@
 
 # API
 
+<img width="1742" height="973" alt="image" src="https://github.com/user-attachments/assets/26acc87f-c284-46bb-bfa4-88922d91bfd2" />
+
 ```
 <?php
 function analyserCSV($filePath) {

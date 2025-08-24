@@ -113,7 +113,7 @@ export async function GET() {
     {
       success: false,
       error:
-        "Envoyer un fichier CSV (paramètre `file` au format `FormData`) via une requête POST (voir https://github.com/inwardmovement/eqx-scrutin#api).",
+        "Envoyer un fichier CSV (paramètre `file` au format `FormData`) via une requête POST (voir https://github.com/inwardmovement/eqx-scrutin#api)",
     },
     { status: 405 },
   )

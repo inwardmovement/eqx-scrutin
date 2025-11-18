@@ -931,6 +931,7 @@ function ResultDisplay({ data }: { data: ResultData }) {
                       stackId="a"
                       fill={ratingColors[rating as keyof typeof ratingColors]}
                       name={rating}
+                      isAnimationActive={false}
                     />
                   ))}
                   {/* Barre pour l'abstention (à droite) - même stackId pour alignement continu */}

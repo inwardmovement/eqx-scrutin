@@ -127,6 +127,52 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   return null
 }
 
+// Légende personnalisée pour garantir que "Abstention" soit toujours en dernier
+const CustomLegend = ({ payload }: any) => {
+  if (!payload || !payload.length) {
+    return null
+  }
+
+  // Séparer les éléments : mentions normales et Abstention
+  const abstentionItem = payload.find(
+    (item: any) => item.value === "Abstention",
+  )
+  const otherItems = payload.filter((item: any) => item.value !== "Abstention")
+
+  // Trier les autres éléments selon l'ordre défini dans ratingOrder
+  const sortedOtherItems = otherItems.sort((a: any, b: any) => {
+    const indexA = ratingOrder.indexOf(a.value)
+    const indexB = ratingOrder.indexOf(b.value)
+    // Si un élément n'est pas dans ratingOrder, le mettre à la fin
+    if (indexA === -1) return 1
+    if (indexB === -1) return -1
+    return indexA - indexB
+  })
+
+  // Réorganiser : mentions normales d'abord (dans l'ordre de ratingOrder), puis Abstention en dernier
+  const orderedPayload = abstentionItem
+    ? [...sortedOtherItems, abstentionItem]
+    : sortedOtherItems
+
+  return (
+    <div className="flex flex-wrap items-center justify-center gap-4 pt-3">
+      {orderedPayload.map((item: any) => (
+        <div
+          key={item.value}
+          className="flex items-center gap-1.5 [&>svg]:h-3 [&>svg]:w-3 [&>svg]:text-muted-foreground">
+          <div
+            className="size-3 shrink-0 rounded-[2px]"
+            style={{
+              backgroundColor: item.color,
+            }}
+          />
+          <span className="text-muted-foreground">{item.value}</span>
+        </div>
+      ))}
+    </div>
+  )
+}
+
 // Créer le contexte pour le seuil de validation
 const VictoryThresholdContext = createContext<{
   victoryThreshold: string
@@ -876,7 +922,7 @@ function ResultDisplay({ data }: { data: ResultData }) {
                     content={<CustomTooltip />}
                     cursor={{ fill: "currentColor", opacity: 0.1 }}
                   />
-                  <Legend />
+                  <Legend content={<CustomLegend />} />
                   {/* Barres de votes (mentions) */}
                   {ratingOrder.map(rating => (
                     <Bar
@@ -905,7 +951,7 @@ function ResultDisplay({ data }: { data: ResultData }) {
                   {sortedChoices.map((_, index) => (
                     <div
                       key={index}
-                      className="absolute flex items-center justify-end text-right text-sm text-[#a3a3a3]"
+                      className="absolute flex items-center justify-end text-right text-muted-foreground"
                       style={{
                         top: `${yAxisPositions[index]}px`,
                         transform: "translateY(-50%)",

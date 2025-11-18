@@ -82,6 +82,14 @@ export async function processDocument(
           allMentions.add(mention)
         }
       }
+      
+      // Vérifier si l'abstention est présente
+      const hasAbstention = allMentions.has("Abstention")
+      
+      // Retirer l'abstention du comptage pour vérifier le format
+      if (hasAbstention) {
+        allMentions.delete("Abstention")
+      }
       const mentionCount = allMentions.size
 
       // Vérifier la cohérence entre le format du fichier et l'option sélectionnée
@@ -120,6 +128,7 @@ export async function processDocument(
           ...(isVersion6
             ? { "Assez bien": 0, "Très bien": 0 }
             : { Excellent: 0 }),
+          ...(hasAbstention ? { Abstention: 0 } : {}),
         }
       })
 
@@ -137,15 +146,18 @@ export async function processDocument(
 
       // Vérification que toutes les mentions sont valides
       const validMentions = new Set(mentionOrder)
+      if (hasAbstention) {
+        validMentions.add("Abstention")
+      }
 
       // Fonction pour trouver la mention majoritaire selon la définition du jugement majoritaire
       function findMajorityMention(distribution: {
         [key: string]: number
       }): string {
-        const totalVotes = Object.values(distribution).reduce(
-          (a, b) => a + b,
-          0,
-        )
+        // Exclure les abstentions du calcul du total de votes
+        const totalVotes = Object.entries(distribution)
+          .filter(([mention]) => mention !== "Abstention")
+          .reduce((a, [, b]) => a + b, 0)
 
         // Position de la mention majoritaire selon le nombre de votants
         const majorityPosition =
@@ -207,32 +219,39 @@ export async function processDocument(
       let winningMention = ""
 
       choices.forEach(choice => {
-        // Calculer le nombre total de votes pour ce choix
-        const totalVotes = Object.values(mentionCounts[choice]).reduce(
-          (a, b) => a + b,
-          0,
-        )
+        // Calculer le nombre total de votes pour ce choix (exclure les abstentions)
+        const totalVotes = Object.entries(mentionCounts[choice])
+          .filter(([mention]) => mention !== "Abstention")
+          .reduce((a, [, b]) => a + b, 0)
 
-        // Déterminer la mention majoritaire
-        const dominantMention = findMajorityMention(mentionCounts[choice])
+        // Déterminer la mention majoritaire (en excluant les abstentions)
+        const distributionWithoutAbstention = { ...mentionCounts[choice] }
+        if (hasAbstention) {
+          delete distributionWithoutAbstention["Abstention"]
+        }
+        const dominantMention = findMajorityMention(distributionWithoutAbstention)
         const dominantMentionIndex = mentionOrder.indexOf(dominantMention)
 
         // Calculer Pc (partisans) - somme des votes strictement supérieurs à la mention majoritaire
         let partisans = 0
         for (let i = dominantMentionIndex + 1; i < mentionOrder.length; i++) {
-          partisans += mentionCounts[choice][mentionOrder[i]]
+          partisans += mentionCounts[choice][mentionOrder[i]] || 0
         }
-        const Pc = partisans / totalVotes
+        const Pc = totalVotes > 0 ? partisans / totalVotes : 0
 
         // Calculer Oc (opposants) - somme des votes strictement inférieurs à la mention majoritaire
         let opposants = 0
         for (let i = 0; i < dominantMentionIndex; i++) {
-          opposants += mentionCounts[choice][mentionOrder[i]]
+          opposants += mentionCounts[choice][mentionOrder[i]] || 0
         }
-        const Oc = opposants / totalVotes
+        const Oc = totalVotes > 0 ? opposants / totalVotes : 0
 
         // Calculer le score selon la formule : Mc + 0.5 * ((Pc - Oc)/(1 - Pc - Oc))
-        const score = dominantMentionIndex + 0.5 * ((Pc - Oc) / (1 - Pc - Oc))
+        const denominator = 1 - Pc - Oc
+        const score =
+          denominator !== 0
+            ? dominantMentionIndex + 0.5 * ((Pc - Oc) / denominator)
+            : dominantMentionIndex
 
         // Mettre à jour le gagnant si ce score est plus élevé
         if (score > bestScore) {

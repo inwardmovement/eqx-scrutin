@@ -216,7 +216,7 @@ function HomeContent() {
                               Choix A,Choix B,Choix C...{"\n"}
                               Excellent,Passable,Bien...{"\n"}
                               Insuffisant,Bien,Passable...{"\n"}
-                              Excellent,À rejeter,Bien...{"\n"}
+                              Excellent,Abstention,Bien...{"\n"}
                               ...
                             </code>
                           </pre>
@@ -245,7 +245,7 @@ function HomeContent() {
           <ul className="list-disc pl-4">
             <li>
               Mentions : <em>Excellent</em>, <em>Bien</em>, <em>Passable</em>,{" "}
-              <em>Insuffisant</em>, <em>À rejeter</em>
+              <em>Insuffisant</em>, <em>À rejeter</em>, <em>Abstention</em>
             </li>
             <li>
               Résultat calculé au{" "}

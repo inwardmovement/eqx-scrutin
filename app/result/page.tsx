@@ -1,6 +1,13 @@
 "use client"
 
-import { Suspense, useState, useEffect, createContext, useContext } from "react"
+import {
+  Suspense,
+  useState,
+  useEffect,
+  createContext,
+  useContext,
+  useRef,
+} from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import Image from "next/image"
 import Link from "next/link"
@@ -75,6 +82,7 @@ const ratingColors = {
   Passable: "#d1d5db", // gray-300
   Insuffisant: "#fb923c", // orange-400 (alt #f87171 red-400)
   "À rejeter": "#ef4444", // red-500 (alt #eb2929 red-600 avec contraste amélioré)
+  Abstention: "#374151", // gray-700 (gris foncé)
 }
 
 // Tooltip pourcentages
@@ -84,13 +92,29 @@ const CustomTooltip = ({ active, payload, label }: any) => {
     const distribution =
       payload[0]?.payload?.originalDistribution?.[choice]?.distribution || {}
 
+    // Calculer le total de votes (exclure les abstentions)
+    const totalVotes = Object.entries(distribution)
+      .filter(([mention]) => mention !== "Abstention")
+      .reduce((sum, [, count]) => sum + (count as number), 0)
+
     return (
       <div className="rounded border bg-background p-3 shadow-lg">
         <p className="font-bold text-foreground">{choice}</p>
         {payload.map((entry: any, index: number) => {
           const rating = entry.name
           const votes = distribution[rating] || 0
-          const percentage = entry.value
+          const percentage = Math.abs(entry.value * 100)
+          // Pour l'abstention, afficher comme valeur négative
+          if (rating === "Abstention") {
+            return (
+              <p
+                key={`item-${index}`}
+                className="text-sm"
+                style={{ color: entry.color }}>
+                {`${rating}: ${percentage.toFixed(1)}% (${votes})`}
+              </p>
+            )
+          }
           return (
             <p key={`item-${index}`} style={{ color: entry.color }}>
               {`${rating}: ${percentage.toFixed(1)}% (${votes})`}
@@ -583,6 +607,8 @@ function LoadingContent() {
 function ResultDisplay({ data }: { data: ResultData }) {
   const { victoryThreshold } = useVictoryThreshold()
   const searchParams = useSearchParams()
+  const chartContainerRef = useRef<HTMLDivElement>(null)
+  const [yAxisPositions, setYAxisPositions] = useState<number[]>([])
 
   // Trier les choix par score
   const sortedChoices = Object.entries(data.distribution)
@@ -620,27 +646,135 @@ function ResultDisplay({ data }: { data: ResultData }) {
   }
 
   // Transform the distribution data for the stacked bar chart
-  // and calculate percentages
+  // Approche : utiliser le même stackId mais avec un offset pour l'abstention
+  // L'abstention sera calculée comme une valeur qui commence à 0 et va vers la gauche
   const chartData = sortedChoices.map(choice => {
     const result: { [key: string]: any } = { name: choice.name }
 
-    // Calculate total votes for this choice
-    const totalVotes = Object.values(choice.distribution).reduce(
-      (sum, count) => sum + count,
-      0,
-    )
+    // Calculate total votes for this choice (exclure les abstentions)
+    const totalVotes = Object.entries(choice.distribution)
+      .filter(([mention]) => mention !== "Abstention")
+      .reduce((sum, [, count]) => sum + (count as number), 0)
+
+    const abstentionCount = choice.distribution["Abstention"] || 0
+    const totalWithAbstention = totalVotes + abstentionCount
 
     // Store the original distribution for the tooltip
     result.originalDistribution = data.distribution
 
-    // Add each rating value to the result as a percentage
+    // Calculer l'abstention comme valeur positive (proportion du total avec abstention)
+    const abstentionValue =
+      totalWithAbstention > 0 ? abstentionCount / totalWithAbstention : 0
+
+    // Add each rating value to the result comme fraction du total avec abstention
     ratingOrder.forEach(rating => {
       const count = choice.distribution[rating] || 0
-      result[rating] = totalVotes > 0 ? (count / totalVotes) * 100 : 0
+      result[rating] = totalWithAbstention > 0 ? count / totalWithAbstention : 0
     })
+
+    // L'abstention est la valeur positive qui sera à droite
+    result["Abstention"] = abstentionValue
 
     return result
   })
+
+  // Calculer le domaine et les ticks pour l'axe X
+  const hasAbstention = chartData.some(
+    (entry: any) =>
+      entry["Abstention"] !== undefined && entry["Abstention"] > 0,
+  )
+  let xAxisDomain: [number, number] = [0, 1]
+  let xAxisTicks: number[] = [0, 0.25, 0.5, 0.75, 1]
+
+  if (hasAbstention) {
+    // Trouver la valeur maximale (incluant les abstentions)
+    const allValues: number[] = []
+    chartData.forEach((entry: any) => {
+      Object.entries(entry).forEach(([key, val]: [string, any]) => {
+        if (
+          key !== "name" &&
+          key !== "originalDistribution" &&
+          typeof val === "number"
+        ) {
+          allValues.push(val)
+        }
+      })
+    })
+    const max = allValues.length > 0 ? Math.max(...allValues) : 1
+    // Le domaine commence à 0 et va jusqu'à max avec une petite marge
+    xAxisDomain = [0, max * 1.05] as [number, number]
+
+    // Générer des ticks de 0 à max
+    const step = max / 4
+    xAxisTicks = []
+    // 0
+    xAxisTicks.push(0)
+    // Ticks positifs
+    for (let i = step; i <= max; i += step) {
+      xAxisTicks.push(i)
+    }
+    xAxisTicks = xAxisTicks.sort((a, b) => a - b)
+  }
+
+  // Calculer dynamiquement les positions des libellés Y en fonction de la taille réelle du graphique
+  useEffect(() => {
+    if (!chartContainerRef.current) return
+
+    const calculateYAxisPositions = () => {
+      const container = chartContainerRef.current
+      if (!container) return
+
+      // Trouver l'élément SVG du graphique
+      const svg = container.querySelector("svg")
+      if (!svg) return
+
+      // Trouver les lignes de la grille horizontales
+      const gridLines = svg.querySelectorAll(
+        'line[stroke-dasharray="3 3"]',
+      ) as NodeListOf<SVGLineElement>
+
+      if (gridLines.length === 0) return
+
+      // Filtrer les lignes horizontales (celles qui ont y1 === y2)
+      const horizontalLines = Array.from(gridLines).filter(
+        line => line.getAttribute("y1") === line.getAttribute("y2"),
+      )
+
+      if (horizontalLines.length < sortedChoices.length) return
+
+      // Obtenir la position du conteneur par rapport à la page
+      const containerRect = container.getBoundingClientRect()
+      const svgRect = svg.getBoundingClientRect()
+
+      // Calculer les positions des lignes par rapport au conteneur
+      const positions = horizontalLines
+        .slice(0, sortedChoices.length)
+        .map(line => {
+          const y1 = parseFloat(line.getAttribute("y1") || "0")
+          return y1 - (svgRect.top - containerRect.top)
+        })
+
+      setYAxisPositions(positions)
+    }
+
+    // Calculer initialement avec un délai pour laisser le graphique se dessiner
+    const timeoutId = setTimeout(calculateYAxisPositions, 100)
+
+    // Recalculer lors du redimensionnement
+    const resizeObserver = new ResizeObserver(() => {
+      // Attendre un peu pour que le graphique se redessine
+      setTimeout(calculateYAxisPositions, 100)
+    })
+
+    if (chartContainerRef.current) {
+      resizeObserver.observe(chartContainerRef.current)
+    }
+
+    return () => {
+      clearTimeout(timeoutId)
+      resizeObserver.disconnect()
+    }
+  }, [hasAbstention, sortedChoices.length, chartData])
 
   return (
     <>
@@ -696,7 +830,7 @@ function ResultDisplay({ data }: { data: ResultData }) {
             <CardTitle>Distribution des votes</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="h-80">
+            <div ref={chartContainerRef} className="relative h-80">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart
                   layout="vertical"
@@ -704,36 +838,46 @@ function ResultDisplay({ data }: { data: ResultData }) {
                   margin={{
                     top: 20,
                     right: 30,
-                    left: 20,
+                    left: 40,
                     bottom: 5,
                   }}
-                  stackOffset="expand"
+                  stackOffset={hasAbstention ? undefined : "expand"}
                   barCategoryGap={10}
                   barSize={30}>
                   <CartesianGrid
                     strokeDasharray="3 3"
-                    stroke="currentColor"
+                    stroke="transparent"
                     opacity={0.1}
+                    vertical={false}
                   />
                   <XAxis
                     type="number"
-                    tickFormatter={value => `${(value * 100).toFixed(0)}%`}
-                    domain={[0, 1]}
-                    ticks={[0, 0.25, 0.5, 0.75, 1]}
-                    tick={{ fill: "#a3a3a3" }}
+                    tickFormatter={value => {
+                      return `${Math.abs(value * 100).toFixed(0)}%`
+                    }}
+                    domain={xAxisDomain}
+                    ticks={xAxisTicks}
+                    tick={{ fill: "transparent" }}
+                    axisLine={false}
+                    stroke="transparent"
+                    hide={true}
                   />
                   <YAxis
                     dataKey="name"
                     type="category"
-                    tick={{ fill: "#a3a3a3" }}
+                    tick={{ fill: "transparent" }}
                     tickFormatter={(value, index) => `#${index + 1}`}
                     interval={0}
+                    width={0}
+                    axisLine={false}
+                    stroke="transparent"
                   />
                   <TooltipChart
                     content={<CustomTooltip />}
                     cursor={{ fill: "currentColor", opacity: 0.1 }}
                   />
                   <Legend />
+                  {/* Barres de votes (mentions) */}
                   {ratingOrder.map(rating => (
                     <Bar
                       key={rating}
@@ -743,8 +887,34 @@ function ResultDisplay({ data }: { data: ResultData }) {
                       name={rating}
                     />
                   ))}
+                  {/* Barre pour l'abstention (à droite) - même stackId pour alignement continu */}
+                  {hasAbstention && (
+                    <Bar
+                      dataKey="Abstention"
+                      stackId="a"
+                      fill={ratingColors["Abstention"]}
+                      name="Abstention"
+                      isAnimationActive={false}
+                    />
+                  )}
                 </BarChart>
               </ResponsiveContainer>
+              {/* YAxis personnalisé pour l'alignement avec les lignes de la grille */}
+              {yAxisPositions.length > 0 && (
+                <div className="absolute left-0 top-0 h-full w-[45px]">
+                  {sortedChoices.map((_, index) => (
+                    <div
+                      key={index}
+                      className="absolute flex items-center justify-end text-right text-sm text-[#a3a3a3]"
+                      style={{
+                        top: `${yAxisPositions[index]}px`,
+                        transform: "translateY(-50%)",
+                      }}>
+                      #{index + 1}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>

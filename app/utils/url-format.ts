@@ -7,6 +7,7 @@ export const MENTION_SHORTCUTS: { [key: string]: string } = {
   Passable: "P",
   Insuffisant: "I",
   "À rejeter": "R",
+  Abstention: "A",
 }
 
 // Mapping des abréviations vers les mentions complètes
@@ -16,6 +17,7 @@ export const MENTION_FULL: { [key: string]: string } = {
   P: "Passable",
   I: "Insuffisant",
   R: "À rejeter",
+  A: "Abstention",
 }
 
 // Convertit les données du scrutin en format URL
@@ -28,7 +30,15 @@ export function formatDataForUrl(data: ScrutinData): string {
     const mentionShortcut = MENTION_SHORTCUTS[choice.mention]
 
     // Crée la chaîne de distribution
-    const distributionString = Object.entries(choice.distribution)
+    // Trier pour mettre l'abstention en dernier si elle existe
+    const distributionEntries = Object.entries(choice.distribution)
+    const abstentionEntry = distributionEntries.find(([mention]) => mention === "Abstention")
+    const otherEntries = distributionEntries.filter(([mention]) => mention !== "Abstention")
+    const sortedEntries = abstentionEntry 
+      ? [...otherEntries, abstentionEntry]
+      : otherEntries
+    
+    const distributionString = sortedEntries
       .map(([mention, count]) => `${MENTION_SHORTCUTS[mention]}${count}`)
       .join("")
 
@@ -93,13 +103,12 @@ export function parseUrlData(urlData: string): ScrutinData {
     }
   })
 
-  // Calculer le nombre de votants à partir du premier choix
+  // Calculer le nombre de votants à partir du premier choix (exclure les abstentions)
   const firstChoice = Object.values(distribution)[0]
   const totalVotes = firstChoice
-    ? Object.values(firstChoice.distribution).reduce(
-        (a: number, b: number) => a + b,
-        0,
-      )
+    ? Object.entries(firstChoice.distribution)
+        .filter(([mention]) => mention !== "Abstention")
+        .reduce((a: number, [, b]: [string, number]) => a + b, 0)
     : 0
 
   return {

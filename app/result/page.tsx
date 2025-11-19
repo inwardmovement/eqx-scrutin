@@ -425,7 +425,7 @@ function ResultContent() {
             </div>
           )}
 
-          {!isEmbedded && <Separator className="bg-brand-light-blue mb-8" />}
+          {!isEmbedded && <Separator className="mb-8 bg-brand-light-blue" />}
 
           <Suspense>
             <ResultData setData={setData} setIsLoading={setIsLoading} />
@@ -598,7 +598,7 @@ function LoadingContent() {
   return (
     <>
       <div className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-2">
-        <Card className="bg-brand-dark-blue border-none shadow-none">
+        <Card className="border-none bg-brand-dark-blue shadow-none">
           <CardHeader>
             <CardTitle>Classement</CardTitle>
           </CardHeader>
@@ -607,10 +607,10 @@ function LoadingContent() {
               {[1, 2, 3].map((_, index) => (
                 <div key={index} className={`flex flex-col rounded-lg p-4`}>
                   <div className="flex items-center gap-3">
-                    <Skeleton className="bg-brand-light-blue h-8 w-8 rounded-full" />
+                    <Skeleton className="h-8 w-8 rounded-full bg-brand-light-blue" />
                     <div className="flex-1">
-                      <Skeleton className="bg-brand-light-blue mb-2 h-6 w-32" />
-                      <Skeleton className="bg-brand-light-blue h-4 w-48" />
+                      <Skeleton className="mb-2 h-6 w-32 bg-brand-light-blue" />
+                      <Skeleton className="h-4 w-48 bg-brand-light-blue" />
                     </div>
                   </div>
                 </div>
@@ -619,7 +619,7 @@ function LoadingContent() {
           </CardContent>
         </Card>
 
-        <Card className="bg-brand-dark-blue border-none shadow-none">
+        <Card className="border-none bg-brand-dark-blue shadow-none">
           <CardHeader>
             <CardTitle>Distribution des votes</CardTitle>
           </CardHeader>
@@ -630,14 +630,14 @@ function LoadingContent() {
                 <div className="flex-1 space-y-8 py-8">
                   {[1, 2, 3].map((_, index) => (
                     <div key={index} className="flex items-center gap-4">
-                      <Skeleton className="bg-brand-light-blue h-6 w-20" />
+                      <Skeleton className="h-6 w-20 bg-brand-light-blue" />
                       <div className="flex-1">
                         <div className="flex h-6">
-                          <Skeleton className="bg-brand-light-blue/50 h-full w-[15%] rounded-none" />
-                          <Skeleton className="bg-brand-light-blue/75 h-full w-[20%] rounded-none" />
-                          <Skeleton className="bg-brand-light-blue/50 h-full w-[25%] rounded-none" />
-                          <Skeleton className="bg-brand-light-blue/75 h-full w-[20%] rounded-none" />
-                          <Skeleton className="bg-brand-light-blue/50 h-full w-[20%] rounded-none" />
+                          <Skeleton className="h-full w-[15%] rounded-none bg-brand-light-blue/50" />
+                          <Skeleton className="h-full w-[20%] rounded-none bg-brand-light-blue/75" />
+                          <Skeleton className="h-full w-[25%] rounded-none bg-brand-light-blue/50" />
+                          <Skeleton className="h-full w-[20%] rounded-none bg-brand-light-blue/75" />
+                          <Skeleton className="h-full w-[20%] rounded-none bg-brand-light-blue/50" />
                         </div>
                       </div>
                     </div>
@@ -832,7 +832,7 @@ function ResultDisplay({ data }: { data: ResultData }) {
   return (
     <>
       <div className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-2">
-        <Card className="bg-brand-dark-blue border-none shadow-none">
+        <Card className="border-none bg-brand-dark-blue shadow-none">
           <CardHeader>
             <CardTitle>Classement</CardTitle>
           </CardHeader>
@@ -871,7 +871,7 @@ function ResultDisplay({ data }: { data: ResultData }) {
                       </p>
                     </div>
                     {isWinner(choice) ? (
-                      <div className="text-brand-yellow/80 flex gap-2">
+                      <div className="flex gap-2">
                         <span>Validation</span>
                         <Sparkles />
                       </div>
@@ -883,7 +883,7 @@ function ResultDisplay({ data }: { data: ResultData }) {
           </CardContent>
         </Card>
 
-        <Card className="bg-brand-dark-blue border-none shadow-none">
+        <Card className="border-none bg-brand-dark-blue shadow-none">
           <CardHeader>
             <CardTitle>Distribution des votes</CardTitle>
           </CardHeader>

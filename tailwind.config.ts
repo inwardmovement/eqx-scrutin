@@ -19,7 +19,7 @@ const config: Config = {
         "brand-sea-blue": "#1c355a",
         card: {
           DEFAULT: "hsl(var(--card))",
-          foreground: "hsl(var(--card-foreground))",
+          foreground: "var(--card-foreground)",
         },
         popover: {
           DEFAULT: "hsl(var(--popover))",

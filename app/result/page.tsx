@@ -38,6 +38,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuLabel,
 } from "@/components/ui/dropdown-menu"
+import { Separator } from "@/components/ui/separator"
 import {
   Link2,
   Text,
@@ -99,7 +100,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 
     return (
       <div className="rounded bg-black p-3 shadow-lg">
-        <p className="font-bold text-foreground">{choice}</p>
+        <p className="text-brand-light-blue font-bold">{choice}</p>
         {payload.map((entry: any, index: number) => {
           const rating = entry.name
           const votes = distribution[rating] || 0
@@ -159,14 +160,14 @@ const CustomLegend = ({ payload }: any) => {
       {orderedPayload.map((item: any) => (
         <div
           key={item.value}
-          className="flex items-center gap-1.5 [&>svg]:h-3 [&>svg]:w-3 [&>svg]:text-muted-foreground">
+          className="[&>svg]: flex items-center gap-1.5 [&>svg]:h-3 [&>svg]:w-3">
           <div
             className="size-3 shrink-0 rounded-[2px]"
             style={{
               backgroundColor: item.color,
             }}
           />
-          <span className="text-muted-foreground">{item.value}</span>
+          <span className="">{item.value}</span>
         </div>
       ))}
     </div>
@@ -344,7 +345,8 @@ function ResultContent() {
         return {
           variant: "ghost" as const,
           icon: <EllipsisVertical />,
-          className: "hover:bg-muted-foreground/10",
+          className:
+            "text-brand-light-blue hover:text-brand-light-blue hover:bg-muted-foreground/10",
         }
     }
   }
@@ -364,7 +366,9 @@ function ResultContent() {
               id="header"
               className="mb-6 flex flex-col items-center justify-between md:flex-row">
               <div className="flex flex-col items-center md:flex-row md:gap-4">
-                <h1 className="text-3xl font-bold">Résultat du scrutin</h1>
+                <h1 className="text-brand-light-blue text-3xl font-bold">
+                  Résultat du scrutin
+                </h1>
                 <DropdownMenu>
                   <DropdownMenuTrigger
                     asChild
@@ -423,6 +427,8 @@ function ResultContent() {
             </div>
           )}
 
+          {!isEmbedded && <Separator className="bg-brand-light-blue mb-8" />}
+
           <Suspense>
             <ResultData setData={setData} setIsLoading={setIsLoading} />
           </Suspense>
@@ -435,13 +441,13 @@ function ResultContent() {
           {!isEmbedded && (
             <div
               id="footer"
-              className="flex flex-row items-center gap-2 space-y-0 text-xs text-muted-foreground">
+              className="text-brand-light-blue flex flex-row items-center gap-2 space-y-0 text-xs">
               <div>
                 Résultat calculé au{" "}
                 <Link
                   href="https://fr.wikipedia.org/wiki/Jugement_usuel"
                   target="_blank"
-                  className="text-blue-600 hover:underline">
+                  className="">
                   Jugement médian
                 </Link>
               </div>
@@ -836,12 +842,10 @@ function ResultDisplay({ data }: { data: ResultData }) {
                     isWinner(choice) ? "bg-brand-yellow/10" : ""
                   }`}>
                   <div className="flex items-center gap-3">
-                    <span className="text-xl font-bold text-muted-foreground">
-                      #{index + 1}
-                    </span>
+                    <span className="text-xl font-bold">#{index + 1}</span>
                     <div className="flex-1">
                       <h3 className="text-lg font-semibold">{choice.name}</h3>
-                      <p className="text-sm text-muted-foreground">
+                      <p className="text-sm">
                         Mention{" "}
                         <span
                           className="font-medium"
@@ -950,7 +954,7 @@ function ResultDisplay({ data }: { data: ResultData }) {
                   {sortedChoices.map((_, index) => (
                     <div
                       key={index}
-                      className="absolute flex items-center justify-end text-right text-muted-foreground"
+                      className="absolute flex items-center justify-end text-right"
                       style={{
                         top: `${yAxisPositions[index]}px`,
                         transform: "translateY(-50%)",

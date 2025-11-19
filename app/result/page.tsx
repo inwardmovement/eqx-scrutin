@@ -594,7 +594,7 @@ function LoadingContent() {
   return (
     <>
       <div className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-2">
-        <Card className="bg-brand-dark-blue border-none">
+        <Card className="bg-brand-dark-blue border-none shadow-none">
           <CardHeader>
             <CardTitle>Classement</CardTitle>
           </CardHeader>
@@ -615,7 +615,7 @@ function LoadingContent() {
           </CardContent>
         </Card>
 
-        <Card className="bg-brand-dark-blue border-none">
+        <Card className="bg-brand-dark-blue border-none shadow-none">
           <CardHeader>
             <CardTitle>Distribution des votes</CardTitle>
           </CardHeader>
@@ -823,7 +823,7 @@ function ResultDisplay({ data }: { data: ResultData }) {
   return (
     <>
       <div className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-2">
-        <Card className="bg-brand-dark-blue border-none">
+        <Card className="bg-brand-dark-blue border-none shadow-none">
           <CardHeader>
             <CardTitle>Classement</CardTitle>
           </CardHeader>
@@ -869,7 +869,7 @@ function ResultDisplay({ data }: { data: ResultData }) {
           </CardContent>
         </Card>
 
-        <Card className="bg-brand-dark-blue border-none">
+        <Card className="bg-brand-dark-blue border-none shadow-none">
           <CardHeader>
             <CardTitle>Distribution des votes</CardTitle>
           </CardHeader>

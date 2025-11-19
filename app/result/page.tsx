@@ -609,10 +609,10 @@ function LoadingContent() {
               {[1, 2, 3].map((_, index) => (
                 <div key={index} className={`flex flex-col rounded-lg p-4`}>
                   <div className="flex items-center gap-3">
-                    <Skeleton className="h-8 w-8 rounded-full bg-muted-foreground" />
+                    <Skeleton className="bg-brand-light-blue h-8 w-8 rounded-full" />
                     <div className="flex-1">
-                      <Skeleton className="mb-2 h-6 w-32 bg-muted-foreground" />
-                      <Skeleton className="h-4 w-48 bg-muted-foreground" />
+                      <Skeleton className="bg-brand-light-blue mb-2 h-6 w-32" />
+                      <Skeleton className="bg-brand-light-blue h-4 w-48" />
                     </div>
                   </div>
                 </div>
@@ -632,14 +632,14 @@ function LoadingContent() {
                 <div className="flex-1 space-y-8 py-8">
                   {[1, 2, 3].map((_, index) => (
                     <div key={index} className="flex items-center gap-4">
-                      <Skeleton className="h-6 w-20 bg-muted-foreground" />
+                      <Skeleton className="bg-brand-light-blue h-6 w-20" />
                       <div className="flex-1">
                         <div className="flex h-6">
-                          <Skeleton className="h-full w-[15%] rounded-none bg-muted-foreground/50" />
-                          <Skeleton className="h-full w-[20%] rounded-none bg-muted-foreground/75" />
-                          <Skeleton className="h-full w-[25%] rounded-none bg-muted-foreground/50" />
-                          <Skeleton className="h-full w-[20%] rounded-none bg-muted-foreground/75" />
-                          <Skeleton className="h-full w-[20%] rounded-none bg-muted-foreground/50" />
+                          <Skeleton className="bg-brand-light-blue/50 h-full w-[15%] rounded-none" />
+                          <Skeleton className="bg-brand-light-blue/75 h-full w-[20%] rounded-none" />
+                          <Skeleton className="bg-brand-light-blue/50 h-full w-[25%] rounded-none" />
+                          <Skeleton className="bg-brand-light-blue/75 h-full w-[20%] rounded-none" />
+                          <Skeleton className="bg-brand-light-blue/50 h-full w-[20%] rounded-none" />
                         </div>
                       </div>
                     </div>

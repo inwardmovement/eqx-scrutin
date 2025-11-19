@@ -12,7 +12,7 @@ const config: Config = {
     extend: {
       colors: {
         background: "var(--background)",
-        foreground: "hsl(var(--foreground))",
+        foreground: "var(--foreground)",
         "brand-yellow": "#FFD412",
         "brand-light-blue": "#dce6f5",
         "brand-dark-blue": "#102234",

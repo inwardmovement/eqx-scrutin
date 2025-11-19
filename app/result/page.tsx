@@ -12,6 +12,7 @@ import { useRouter, useSearchParams } from "next/navigation"
 import Image from "next/image"
 import Link from "next/link"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
 import {
   BarChart,
@@ -100,7 +101,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 
     return (
       <div className="rounded bg-black p-3 shadow-lg">
-        <p className="text-brand-light-blue font-bold">{choice}</p>
+        <p className="font-bold">{choice}</p>
         {payload.map((entry: any, index: number) => {
           const rating = entry.name
           const votes = distribution[rating] || 0
@@ -345,8 +346,7 @@ function ResultContent() {
         return {
           variant: "ghost" as const,
           icon: <EllipsisVertical />,
-          className:
-            "text-brand-light-blue hover:text-brand-light-blue hover:bg-muted-foreground/10",
+          className: "hover:text-brand-light-blue hover:bg-muted-foreground/10",
         }
     }
   }
@@ -366,9 +366,7 @@ function ResultContent() {
               id="header"
               className="mb-6 flex flex-col items-center justify-between md:flex-row">
               <div className="flex flex-col items-center md:flex-row md:gap-4">
-                <h1 className="text-brand-light-blue text-3xl font-bold">
-                  Résultat du scrutin
-                </h1>
+                <h1 className="text-3xl font-bold">Résultat du scrutin</h1>
                 <DropdownMenu>
                   <DropdownMenuTrigger
                     asChild
@@ -441,7 +439,7 @@ function ResultContent() {
           {!isEmbedded && (
             <div
               id="footer"
-              className="text-brand-light-blue flex flex-row items-center gap-2 space-y-0 text-xs">
+              className="flex flex-row items-center gap-2 space-y-0 text-xs">
               <div>
                 Résultat calculé au{" "}
                 <Link
@@ -695,6 +693,11 @@ function ResultDisplay({ data }: { data: ResultData }) {
     return choiceIndex <= thresholdIndex
   }
 
+  const isThresholdValidation = ["excellent", "bien", "passable"].includes(
+    victoryThreshold,
+  )
+  const hasValidatedOption = sortedChoices.some(choice => isWinner(choice))
+
   // Transform the distribution data for the stacked bar chart
   // Approche : utiliser le même stackId mais avec un offset pour l'abstention
   // L'abstention sera calculée comme une valeur qui commence à 0 et va vers la gauche
@@ -833,13 +836,20 @@ function ResultDisplay({ data }: { data: ResultData }) {
           <CardHeader>
             <CardTitle>Classement</CardTitle>
           </CardHeader>
+          {isThresholdValidation && !hasValidatedOption ? (
+            <div className="px-4 pb-4">
+              <Alert className="bg-muted-foreground/10">
+                <AlertDescription>Aucune option validée</AlertDescription>
+              </Alert>
+            </div>
+          ) : null}
           <CardContent>
             <div className="flex flex-col gap-4">
               {sortedChoices.map((choice, index) => (
                 <div
                   key={choice.name}
                   className={`flex flex-col rounded-lg p-4 ${
-                    isWinner(choice) ? "bg-brand-yellow/10" : ""
+                    isWinner(choice) ? "bg-muted-foreground/10" : ""
                   }`}>
                   <div className="flex items-center gap-3">
                     <span className="text-xl font-bold">#{index + 1}</span>
@@ -861,7 +871,7 @@ function ResultDisplay({ data }: { data: ResultData }) {
                       </p>
                     </div>
                     {isWinner(choice) ? (
-                      <div className="flex gap-2 text-[#ffd412]/75">
+                      <div className="text-brand-yellow/80 flex gap-2">
                         <span>Validation</span>
                         <Sparkles />
                       </div>

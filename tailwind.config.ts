@@ -11,8 +11,12 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        background: "hsl(var(--background))",
+        background: "var(--background)",
         foreground: "hsl(var(--foreground))",
+        "brand-yellow": "#FFD412",
+        "brand-light-blue": "#dce6f5",
+        "brand-dark-blue": "#102234",
+        "brand-sea-blue": "#1c355a",
         card: {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",

@@ -98,7 +98,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
       .reduce((sum, [, count]) => sum + (count as number), 0)
 
     return (
-      <div className="rounded border bg-background p-3 shadow-lg">
+      <div className="rounded bg-black p-3 shadow-lg">
         <p className="font-bold text-foreground">{choice}</p>
         {payload.map((entry: any, index: number) => {
           const rating = entry.name
@@ -332,19 +332,19 @@ function ResultContent() {
         return {
           variant: "ghost" as const,
           icon: <Check className="text-green-600" />,
-          className: "",
+          className: "hover:bg-muted-foreground/10",
         }
       case "error":
         return {
           variant: "destructive" as const,
           icon: <X />,
-          className: "",
+          className: "hover:bg-muted-foreground/10",
         }
       default:
         return {
           variant: "ghost" as const,
           icon: <EllipsisVertical />,
-          className: "",
+          className: "hover:bg-muted-foreground/10",
         }
     }
   }
@@ -594,21 +594,19 @@ function LoadingContent() {
   return (
     <>
       <div className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-2">
-        <Card>
+        <Card className="bg-brand-dark-blue border-none">
           <CardHeader>
             <CardTitle>Classement</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex flex-col gap-4">
               {[1, 2, 3].map((_, index) => (
-                <div
-                  key={index}
-                  className={`flex flex-col rounded-lg border p-4`}>
+                <div key={index} className={`flex flex-col rounded-lg p-4`}>
                   <div className="flex items-center gap-3">
-                    <Skeleton className="h-8 w-8 rounded-full" />
+                    <Skeleton className="h-8 w-8 rounded-full bg-muted-foreground" />
                     <div className="flex-1">
-                      <Skeleton className="mb-2 h-6 w-32" />
-                      <Skeleton className="h-4 w-48" />
+                      <Skeleton className="mb-2 h-6 w-32 bg-muted-foreground" />
+                      <Skeleton className="h-4 w-48 bg-muted-foreground" />
                     </div>
                   </div>
                 </div>
@@ -617,7 +615,7 @@ function LoadingContent() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="bg-brand-dark-blue border-none">
           <CardHeader>
             <CardTitle>Distribution des votes</CardTitle>
           </CardHeader>
@@ -628,14 +626,14 @@ function LoadingContent() {
                 <div className="flex-1 space-y-8 py-8">
                   {[1, 2, 3].map((_, index) => (
                     <div key={index} className="flex items-center gap-4">
-                      <Skeleton className="h-6 w-20 text-muted-foreground" />
+                      <Skeleton className="h-6 w-20 bg-muted-foreground" />
                       <div className="flex-1">
                         <div className="flex h-6">
-                          <Skeleton className="h-full w-[15%] rounded-none bg-muted/50" />
-                          <Skeleton className="h-full w-[20%] rounded-none bg-muted/75" />
-                          <Skeleton className="h-full w-[25%] rounded-none bg-muted/50" />
-                          <Skeleton className="h-full w-[20%] rounded-none bg-muted/75" />
-                          <Skeleton className="h-full w-[20%] rounded-none bg-muted/50" />
+                          <Skeleton className="h-full w-[15%] rounded-none bg-muted-foreground/50" />
+                          <Skeleton className="h-full w-[20%] rounded-none bg-muted-foreground/75" />
+                          <Skeleton className="h-full w-[25%] rounded-none bg-muted-foreground/50" />
+                          <Skeleton className="h-full w-[20%] rounded-none bg-muted-foreground/75" />
+                          <Skeleton className="h-full w-[20%] rounded-none bg-muted-foreground/50" />
                         </div>
                       </div>
                     </div>
@@ -825,7 +823,7 @@ function ResultDisplay({ data }: { data: ResultData }) {
   return (
     <>
       <div className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-2">
-        <Card>
+        <Card className="bg-brand-dark-blue border-none">
           <CardHeader>
             <CardTitle>Classement</CardTitle>
           </CardHeader>
@@ -834,8 +832,8 @@ function ResultDisplay({ data }: { data: ResultData }) {
               {sortedChoices.map((choice, index) => (
                 <div
                   key={choice.name}
-                  className={`flex flex-col rounded-lg border p-4 ${
-                    isWinner(choice) ? "border-[#ffd412]/75 bg-[#ffd412]/5" : ""
+                  className={`flex flex-col rounded-lg p-4 ${
+                    isWinner(choice) ? "bg-brand-yellow/10" : ""
                   }`}>
                   <div className="flex items-center gap-3">
                     <span className="text-xl font-bold text-muted-foreground">
@@ -871,7 +869,7 @@ function ResultDisplay({ data }: { data: ResultData }) {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="bg-brand-dark-blue border-none">
           <CardHeader>
             <CardTitle>Distribution des votes</CardTitle>
           </CardHeader>

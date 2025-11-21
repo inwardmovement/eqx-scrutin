@@ -198,6 +198,8 @@ function ResultContent() {
     "idle",
   )
   const [victoryThreshold, setVictoryThreshold] = useState(() => {
+    const v = searchParams.get("v")
+    if (v === "0") return "none"
     const s = searchParams.get("s")
     const n = searchParams.get("n")
     if (n) return `top_${n}`
@@ -210,6 +212,11 @@ function ResultContent() {
 
   // Mettre à jour le seuil quand les paramètres d'URL changent
   useEffect(() => {
+    const v = searchParams.get("v")
+    if (v === "0") {
+      setVictoryThreshold("none")
+      return
+    }
     const s = searchParams.get("s")
     const n = searchParams.get("n")
     if (n) setVictoryThreshold(`top_${n}`)
@@ -256,6 +263,9 @@ function ResultContent() {
 
     // Filtrer les choix gagnants
     const winningChoices = sortedChoices.filter(choice => {
+      if (victoryThreshold === "none") {
+        return false
+      }
       if (victoryThreshold === "top_1") {
         const maxScore = Math.max(
           ...sortedChoices.map(c => parseFloat(c.score)),
@@ -278,8 +288,17 @@ function ResultContent() {
       return choiceIndex <= thresholdIndex
     })
 
+    const classementSynthese = sortedChoices
+      .map(
+        (choice, index) =>
+          `#${index + 1} ${choice.name}\nMention ${choice.mention} (${choice.score})`,
+      )
+      .join("\n\n")
+
     let textToCopy = ""
-    if (winningChoices.length === 1) {
+    if (winningChoices.length === 0) {
+      textToCopy = `Le scrutin a abouti au classement suivant :\n\n${classementSynthese}`
+    } else if (winningChoices.length === 1) {
       const winner = winningChoices[0]
       textToCopy = `Le scrutin a validé l'option "${winner.name}" avec la mention ${winner.mention} (${winner.score}).`
     } else {
@@ -287,6 +306,10 @@ function ResultContent() {
       winningChoices.forEach((choice, index) => {
         textToCopy += `#${index + 1} "${choice.name}" avec la mention ${choice.mention} (${choice.score})${index < winningChoices.length - 1 ? "\n" : ""}`
       })
+    }
+
+    if (winningChoices.length > 0) {
+      textToCopy += `\n\nClassement complet :\n\n${classementSynthese}`
     }
 
     navigator.clipboard
@@ -479,7 +502,11 @@ function ThresholdSelector() {
   // Fonction pour mettre à jour l'URL avec le nouveau seuil
   const updateThresholdInUrl = (value: string) => {
     const params = new URLSearchParams(searchParams.toString())
-    if (value.startsWith("top_")) {
+    if (value === "none") {
+      params.set("v", "0")
+      params.delete("s")
+      params.delete("n")
+    } else if (value.startsWith("top_")) {
       const n = value.split("_")[1]
       if (n === "1") {
         params.delete("n")
@@ -487,10 +514,12 @@ function ThresholdSelector() {
         params.set("n", n)
       }
       params.delete("s")
+      params.delete("v")
     } else {
       const sValue = value === "excellent" ? "1" : value === "bien" ? "2" : "3"
       params.set("s", sValue)
       params.delete("n")
+      params.delete("v")
     }
     const queryString = params.toString().replace(/\+/g, "%20")
     router.push(`?${queryString}`, { scroll: false })
@@ -556,6 +585,16 @@ function ThresholdSelector() {
               updateThresholdInUrl("passable")
             }}>
             Passable
+          </DropdownMenuRadioItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuRadioItem
+            value="none"
+            onSelect={event => {
+              event.preventDefault()
+              setVictoryThreshold("none")
+              updateThresholdInUrl("none")
+            }}>
+            Aucune
           </DropdownMenuRadioItem>
         </DropdownMenuRadioGroup>
       </DropdownMenuSubContent>
@@ -668,6 +707,9 @@ function ResultDisplay({ data }: { data: ResultData }) {
 
   // Fonction pour déterminer si un choix est gagnant selon le seuil
   const isWinner = (choice: (typeof sortedChoices)[0]) => {
+    if (victoryThreshold === "none") {
+      return false
+    }
     if (victoryThreshold === "top_1") {
       const maxScore = Math.max(...sortedChoices.map(c => parseFloat(c.score)))
       return parseFloat(choice.score) === maxScore

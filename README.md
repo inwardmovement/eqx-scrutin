@@ -1,7 +1,9 @@
 # Fonctionnalités
 
 - Analyse des votes selon la méthode du [jugement médian](https://fr.wikipedia.org/wiki/Jugement_usuel).
-- Configuration du critère de validation.
+- Gestion de l'abstention avec la mention "Abstention".
+- Critère de validation.
+- Taux de participation.
 - Partage du résultat.
 
 ![image](https://github.com/user-attachments/assets/3bad57e8-38e6-4496-bb30-583b7f64a4f7)

@@ -1167,8 +1167,8 @@ function ResultDisplay({ data }: { data: ResultData }) {
 
   return (
     <>
-      <div className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-2">
-        <Card className="border-none bg-brand-dark-blue shadow-none">
+      <div className="mb-8 flex flex-col justify-stretch gap-6 md:flex-row">
+        <Card className="w-full border-none bg-brand-dark-blue shadow-none">
           <CardHeader>
             <CardTitle>Classement</CardTitle>
           </CardHeader>
@@ -1218,115 +1218,116 @@ function ResultDisplay({ data }: { data: ResultData }) {
             </div>
           </CardContent>
         </Card>
-
-        <Card className="border-none bg-brand-dark-blue shadow-none">
-          <CardHeader>
-            <CardTitle>Distribution des votes</CardTitle>
-          </CardHeader>
-          <CardContent className="pb-0">
-            <div ref={chartContainerRef} className="relative h-80">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart
-                  layout="vertical"
-                  data={chartData}
-                  margin={{
-                    top: 20,
-                    right: 30,
-                    left: 40,
-                    bottom: 5,
-                  }}
-                  stackOffset={hasAbstention ? undefined : "expand"}
-                  barCategoryGap={10}
-                  barSize={30}>
-                  <CartesianGrid
-                    strokeDasharray="3 3"
-                    stroke="transparent"
-                    opacity={0.1}
-                    vertical={false}
-                  />
-                  <XAxis
-                    type="number"
-                    tickFormatter={value => {
-                      return `${Math.abs(value * 100).toFixed(0)}%`
-                    }}
-                    domain={xAxisDomain}
-                    ticks={xAxisTicks}
-                    tick={{ fill: "transparent" }}
-                    axisLine={false}
-                    stroke="transparent"
-                    hide={true}
-                  />
-                  <YAxis
-                    dataKey="name"
-                    type="category"
-                    tick={{ fill: "transparent" }}
-                    tickFormatter={(value, index) => `#${index + 1}`}
-                    interval={0}
-                    width={0}
-                    axisLine={false}
-                    stroke="transparent"
-                  />
-                  <TooltipChart
-                    content={<CustomTooltip />}
-                    cursor={{ fill: "currentColor", opacity: 0.1 }}
-                  />
-                  <Legend content={<CustomLegend />} />
-                  {/* Barres de votes (mentions) */}
-                  {ratingOrder.map(rating => (
-                    <Bar
-                      key={rating}
-                      dataKey={rating}
-                      stackId="a"
-                      fill={ratingColors[rating as keyof typeof ratingColors]}
-                      name={rating}
-                      isAnimationActive={false}
-                    />
-                  ))}
-                  {/* Barre pour l'abstention (à droite) - même stackId pour alignement continu */}
-                  {hasAbstention && (
-                    <Bar
-                      dataKey="Abstention"
-                      stackId="a"
-                      fill={ratingColors["Abstention"]}
-                      name="Abstention"
-                      isAnimationActive={false}
-                    />
-                  )}
-                </BarChart>
-              </ResponsiveContainer>
-              {/* YAxis personnalisé pour l'alignement avec les lignes de la grille */}
-              {yAxisPositions.length > 0 && (
-                <div className="absolute left-0 top-0 h-full w-[45px]">
-                  {sortedChoices.map((_, index) => (
-                    <div
-                      key={index}
-                      className="absolute flex items-center justify-end text-right"
-                      style={{
-                        top: `${yAxisPositions[index]}px`,
-                        transform: "translateY(-50%)",
-                      }}>
-                      #{index + 1}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-        {participationRateDisplay ? (
-          <Card className="border-none bg-brand-dark-blue shadow-none md:col-start-2">
+        <div className="flex w-full flex-col gap-6">
+          <Card className="border-none bg-brand-dark-blue shadow-none">
             <CardHeader>
-              <CardTitle>Participation</CardTitle>
+              <CardTitle>Distribution des votes</CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="flex flex-col gap-2">
-                <p className="text-4xl font-semibold">
-                  {participationRateDisplay}%
-                </p>
+            <CardContent className="pb-0">
+              <div ref={chartContainerRef} className="relative h-80">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart
+                    layout="vertical"
+                    data={chartData}
+                    margin={{
+                      top: 20,
+                      right: 30,
+                      left: 40,
+                      bottom: 5,
+                    }}
+                    stackOffset={hasAbstention ? undefined : "expand"}
+                    barCategoryGap={10}
+                    barSize={30}>
+                    <CartesianGrid
+                      strokeDasharray="3 3"
+                      stroke="transparent"
+                      opacity={0.1}
+                      vertical={false}
+                    />
+                    <XAxis
+                      type="number"
+                      tickFormatter={value => {
+                        return `${Math.abs(value * 100).toFixed(0)}%`
+                      }}
+                      domain={xAxisDomain}
+                      ticks={xAxisTicks}
+                      tick={{ fill: "transparent" }}
+                      axisLine={false}
+                      stroke="transparent"
+                      hide={true}
+                    />
+                    <YAxis
+                      dataKey="name"
+                      type="category"
+                      tick={{ fill: "transparent" }}
+                      tickFormatter={(value, index) => `#${index + 1}`}
+                      interval={0}
+                      width={0}
+                      axisLine={false}
+                      stroke="transparent"
+                    />
+                    <TooltipChart
+                      content={<CustomTooltip />}
+                      cursor={{ fill: "currentColor", opacity: 0.1 }}
+                    />
+                    <Legend content={<CustomLegend />} />
+                    {/* Barres de votes (mentions) */}
+                    {ratingOrder.map(rating => (
+                      <Bar
+                        key={rating}
+                        dataKey={rating}
+                        stackId="a"
+                        fill={ratingColors[rating as keyof typeof ratingColors]}
+                        name={rating}
+                        isAnimationActive={false}
+                      />
+                    ))}
+                    {/* Barre pour l'abstention (à droite) - même stackId pour alignement continu */}
+                    {hasAbstention && (
+                      <Bar
+                        dataKey="Abstention"
+                        stackId="a"
+                        fill={ratingColors["Abstention"]}
+                        name="Abstention"
+                        isAnimationActive={false}
+                      />
+                    )}
+                  </BarChart>
+                </ResponsiveContainer>
+                {/* YAxis personnalisé pour l'alignement avec les lignes de la grille */}
+                {yAxisPositions.length > 0 && (
+                  <div className="absolute left-0 top-0 h-full w-[45px]">
+                    {sortedChoices.map((_, index) => (
+                      <div
+                        key={index}
+                        className="absolute flex items-center justify-end text-right"
+                        style={{
+                          top: `${yAxisPositions[index]}px`,
+                          transform: "translateY(-50%)",
+                        }}>
+                        #{index + 1}
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>
-        ) : null}
+          {participationRateDisplay ? (
+            <Card className="border-none bg-brand-dark-blue shadow-none">
+              <CardHeader>
+                <CardTitle>Participation</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex flex-col gap-2">
+                  <p className="text-5xl font-semibold">
+                    {participationRateDisplay} %
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          ) : null}
+        </div>
       </div>
     </>
   )

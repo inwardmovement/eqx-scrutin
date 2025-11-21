@@ -163,7 +163,7 @@ function HomeContent() {
 
   return (
     <main className="flex flex-col items-center p-4 md:mt-8">
-      <Card className="w-full max-w-md">
+      <Card className="w-full max-w-md border-none bg-brand-dark-blue shadow-none">
         <CardHeader className="flex flex-col items-center">
           <Image
             src={Logo}
@@ -216,7 +216,7 @@ function HomeContent() {
                               Choix A,Choix B,Choix C...{"\n"}
                               Excellent,Passable,Bien...{"\n"}
                               Insuffisant,Bien,Passable...{"\n"}
-                              Excellent,Abstention,Bien...{"\n"}
+                              Excellent,Passable,Bien...{"\n"}
                               ...
                             </code>
                           </pre>
@@ -241,18 +241,17 @@ function HomeContent() {
             </div>
           </div>
         </CardContent>
-        <CardFooter className="flex-col items-start text-xs text-gray-600">
+        <CardFooter className="flex-col items-start text-xs">
           <ul className="list-disc pl-4">
             <li>
               Mentions : <em>Excellent</em>, <em>Bien</em>, <em>Passable</em>,{" "}
-              <em>Insuffisant</em>, <em>À rejeter</em>, <em>Abstention</em>
+              <em>Insuffisant</em>, <em>À rejeter</em>
             </li>
             <li>
               Résultat calculé au{" "}
               <Link
                 href="https://fr.wikipedia.org/wiki/Jugement_usuel"
-                target="_blank"
-                className="text-blue-600 hover:underline">
+                target="_blank">
                 Jugement médian
               </Link>
             </li>

@@ -7,13 +7,27 @@ import {
   createContext,
   useContext,
   useRef,
+  useMemo,
+  useId,
 } from "react"
+import type { ChangeEvent, KeyboardEvent } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import Image from "next/image"
 import Link from "next/link"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Field, FieldGroup, FieldLabel } from "@/components/ui/field"
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 import {
   BarChart,
   Bar,
@@ -49,6 +63,7 @@ import {
   EllipsisVertical,
   Sparkles,
   CodeXml,
+  Users,
 } from "lucide-react"
 import { parseUrlData } from "../utils/url-format"
 import Script from "next/script"
@@ -85,6 +100,37 @@ const ratingColors = {
   Insuffisant: "#fdba74", // orange-300
   "À rejeter": "#f87171", // red-400
   Abstention: "#374151", // gray-700
+}
+
+const PARTICIPATION_PARAM_KEY = "p"
+const PARTICIPATION_DEBOUNCE_DELAY_MS = 200
+
+// Analyse le paramètre de participation pour retourner les valeurs brutes
+const getParticipationInputs = (rawParam: string | null) => {
+  if (!rawParam) {
+    return { voters: "", electorate: "" }
+  }
+  const [rawVoters = "", rawElectorate = ""] = rawParam.split("~")
+  return { voters: rawVoters, electorate: rawElectorate }
+}
+
+// Analyse le paramètre de participation pour retourner des nombres valides
+const parseParticipationNumbers = (rawParam: string | null) => {
+  if (!rawParam) {
+    return null
+  }
+  const [rawVoters, rawElectorate] = rawParam.split("~")
+  const voters = Number(rawVoters)
+  const electorate = Number(rawElectorate)
+  if (
+    Number.isNaN(voters) ||
+    Number.isNaN(electorate) ||
+    voters < 0 ||
+    electorate <= 0
+  ) {
+    return null
+  }
+  return { voters, electorate }
 }
 
 // Tooltip pourcentages
@@ -209,6 +255,8 @@ function ResultContent() {
     return "top_1"
   })
   const isEmbedded = searchParams.get("d") === "embed"
+  const [isParticipationOpen, setParticipationOpen] = useState(false)
+  const [isDropdownMenuOpen, setDropdownMenuOpen] = useState(false)
 
   // Mettre à jour le seuil quand les paramètres d'URL changent
   useEffect(() => {
@@ -390,7 +438,10 @@ function ResultContent() {
               className="mb-6 flex flex-col items-center justify-between md:flex-row">
               <div className="flex flex-col items-center md:flex-row md:gap-4">
                 <h1 className="text-3xl font-bold">Résultat du scrutin</h1>
-                <DropdownMenu>
+                <DropdownMenu
+                  modal={false}
+                  open={isDropdownMenuOpen}
+                  onOpenChange={setDropdownMenuOpen}>
                   <DropdownMenuTrigger
                     asChild
                     className={`${copyStatus === "success" ? "focus-visible:ring-0 focus-visible:ring-offset-0" : ""} rounded-full`}>
@@ -426,6 +477,14 @@ function ResultContent() {
                     <DropdownMenuSeparator />
                     <Suspense>
                       <ThresholdSelector />
+                    </Suspense>
+                    <DropdownMenuSeparator />
+                    <Suspense>
+                      <ParticipationMenu
+                        isOpen={isParticipationOpen}
+                        setIsOpen={setParticipationOpen}
+                        isDropdownMenuOpen={isDropdownMenuOpen}
+                      />
                     </Suspense>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem
@@ -602,6 +661,209 @@ function ThresholdSelector() {
   )
 }
 
+type ParticipationMenuProps = {
+  isOpen: boolean
+  setIsOpen: (value: boolean) => void
+  isDropdownMenuOpen: boolean
+}
+
+function ParticipationMenu({
+  isOpen,
+  setIsOpen,
+  isDropdownMenuOpen,
+}: ParticipationMenuProps) {
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const participationParam = searchParams.get(PARTICIPATION_PARAM_KEY)
+  const { voters: initialVoters, electorate: initialElectorate } =
+    getParticipationInputs(participationParam)
+  const [votersInput, setVotersInput] = useState(initialVoters)
+  const [electorateInput, setElectorateInput] = useState(initialElectorate)
+  const debounceRef = useRef<NodeJS.Timeout | null>(null)
+  const votersInputId = useId()
+  const electorateInputId = useId()
+  const invalidNumericKeys = useMemo(() => ["e", "E", "+", "-", ".", ","], [])
+
+  useEffect(() => {
+    const { voters, electorate } = getParticipationInputs(participationParam)
+    setVotersInput(prev => (prev === voters ? prev : voters))
+    setElectorateInput(prev => (prev === electorate ? prev : electorate))
+  }, [participationParam])
+
+  useEffect(() => {
+    return () => {
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current)
+      }
+    }
+  }, [])
+
+  const pushParticipationToUrl = (
+    nextVoters: string,
+    nextElectorate: string,
+  ) => {
+    const params =
+      typeof window !== "undefined"
+        ? new URLSearchParams(window.location.search)
+        : new URLSearchParams(searchParams.toString())
+    const trimmedVoters = nextVoters.trim()
+    const trimmedElectorate = nextElectorate.trim()
+    const hasBothValues = trimmedVoters !== "" && trimmedElectorate !== ""
+    const hasNoValues = trimmedVoters === "" && trimmedElectorate === ""
+
+    if (hasBothValues) {
+      const votersNumber = Number(trimmedVoters)
+      const electorateNumber = Number(trimmedElectorate)
+      const isValid =
+        !Number.isNaN(votersNumber) &&
+        !Number.isNaN(electorateNumber) &&
+        votersNumber >= 0 &&
+        electorateNumber > 0
+
+      if (isValid) {
+        const formattedValue = `${votersNumber}~${electorateNumber}`
+        if (params.get(PARTICIPATION_PARAM_KEY) === formattedValue) {
+          return
+        }
+        params.set(PARTICIPATION_PARAM_KEY, formattedValue)
+        router.push(`?${params.toString()}`, { scroll: false })
+        return
+      }
+    }
+
+    // Ne supprimer le paramètre que si les deux champs sont vides
+    // Cela permet de garder la valeur d'un champ même si l'autre est effacé
+    if (hasNoValues) {
+      if (!params.has(PARTICIPATION_PARAM_KEY)) {
+        return
+      }
+      params.delete(PARTICIPATION_PARAM_KEY)
+      router.push(`?${params.toString()}`, { scroll: false })
+    }
+  }
+
+  const scheduleParticipationUpdate = (
+    nextVoters: string,
+    nextElectorate: string,
+  ) => {
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current)
+    }
+    debounceRef.current = setTimeout(() => {
+      pushParticipationToUrl(nextVoters, nextElectorate)
+    }, PARTICIPATION_DEBOUNCE_DELAY_MS)
+  }
+
+  const handleVotersChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const nextValue = event.target.value
+    setVotersInput(nextValue)
+    scheduleParticipationUpdate(nextValue, electorateInput)
+  }
+
+  const handleElectorateChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const nextValue = event.target.value
+    setElectorateInput(nextValue)
+    scheduleParticipationUpdate(votersInput, nextValue)
+  }
+
+  const handlePreventInvalidInput = (
+    event: KeyboardEvent<HTMLInputElement>,
+  ) => {
+    if (invalidNumericKeys.includes(event.key)) {
+      event.preventDefault()
+    }
+    if (event.key === "Enter") {
+      event.preventDefault()
+      setIsOpen(false)
+    }
+  }
+
+  const handleClear = () => {
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current)
+    }
+    setVotersInput("")
+    setElectorateInput("")
+    pushParticipationToUrl("", "")
+  }
+
+  const handleItemClick = (event: Event | React.SyntheticEvent) => {
+    event.preventDefault()
+    // Ne pas ouvrir le dialog si le menu dropdown n'est pas ouvert
+    // Cela évite l'ouverture accidentelle lors de l'ouverture du menu
+    if (isDropdownMenuOpen) {
+      setIsOpen(true)
+    }
+  }
+
+  return (
+    <>
+      <DropdownMenuItem className="gap-2" onSelect={handleItemClick}>
+        <Users />
+        Participation
+      </DropdownMenuItem>
+      <Dialog open={isOpen} onOpenChange={setIsOpen}>
+        <DialogContent className="bg-dialog sm:max-w-[300px]">
+          <DialogHeader>
+            <DialogTitle>Participation</DialogTitle>
+          </DialogHeader>
+          <FieldGroup className="space-y-3 py-2">
+            <Field className="w-full gap-1">
+              <FieldLabel htmlFor={votersInputId}>Nombre de votants</FieldLabel>
+              <Input
+                id={votersInputId}
+                type="number"
+                min="0"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                aria-label="Nombre de votants"
+                placeholder=""
+                value={votersInput}
+                onChange={handleVotersChange}
+                onKeyDown={handlePreventInvalidInput}
+                className="bg-dialog px-2 py-1.5 text-sm"
+              />
+            </Field>
+            <Field className="w-full gap-1">
+              <FieldLabel htmlFor={electorateInputId}>
+                Taille du corps électoral
+              </FieldLabel>
+              <Input
+                id={electorateInputId}
+                type="number"
+                min="0"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                aria-label="Taille du corps électoral"
+                placeholder=""
+                value={electorateInput}
+                onChange={handleElectorateChange}
+                onKeyDown={handlePreventInvalidInput}
+                className="bg-dialog px-2 py-1.5 text-sm"
+              />
+            </Field>
+          </FieldGroup>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button
+              type="button"
+              variant="ghost"
+              aria-label="Effacer le taux de participation"
+              onClick={handleClear}
+              className="px-4 py-2">
+              Effacer
+            </Button>
+            <DialogClose asChild>
+              <Button variant="outline" className="bg-dialog">
+                Fermer
+              </Button>
+            </DialogClose>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
+  )
+}
+
 function ResultData({
   setData,
   setIsLoading,
@@ -696,6 +958,38 @@ function ResultDisplay({ data }: { data: ResultData }) {
   const searchParams = useSearchParams()
   const chartContainerRef = useRef<HTMLDivElement>(null)
   const [yAxisPositions, setYAxisPositions] = useState<number[]>([])
+  const participationParam = searchParams.get(PARTICIPATION_PARAM_KEY)
+  const participationNumbers = useMemo(
+    () => parseParticipationNumbers(participationParam),
+    [participationParam],
+  )
+  const participationRate = useMemo(() => {
+    if (!participationNumbers) {
+      return null
+    }
+    return (participationNumbers.voters / participationNumbers.electorate) * 100
+  }, [participationNumbers])
+  const participationRateDisplay = useMemo(() => {
+    if (participationRate === null) {
+      return null
+    }
+    return new Intl.NumberFormat("fr-FR", {
+      minimumFractionDigits: 1,
+      maximumFractionDigits: 1,
+    }).format(participationRate)
+  }, [participationRate])
+  const votersDisplay = useMemo(() => {
+    if (!participationNumbers) {
+      return ""
+    }
+    return participationNumbers.voters.toLocaleString("fr-FR")
+  }, [participationNumbers])
+  const electorateDisplay = useMemo(() => {
+    if (!participationNumbers) {
+      return ""
+    }
+    return participationNumbers.electorate.toLocaleString("fr-FR")
+  }, [participationNumbers])
 
   // Trier les choix par score
   const sortedChoices = Object.entries(data.distribution)
@@ -929,7 +1223,7 @@ function ResultDisplay({ data }: { data: ResultData }) {
           <CardHeader>
             <CardTitle>Distribution des votes</CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="pb-0">
             <div ref={chartContainerRef} className="relative h-80">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart
@@ -1019,6 +1313,20 @@ function ResultDisplay({ data }: { data: ResultData }) {
             </div>
           </CardContent>
         </Card>
+        {participationRateDisplay ? (
+          <Card className="border-none bg-brand-dark-blue shadow-none md:col-start-2">
+            <CardHeader>
+              <CardTitle>Participation</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-col gap-2">
+                <p className="text-4xl font-semibold">
+                  {participationRateDisplay}%
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        ) : null}
       </div>
     </>
   )

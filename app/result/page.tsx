@@ -147,7 +147,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 
     return (
       <div className="rounded bg-black p-3 shadow-lg">
-        <p className="font-bold">{choice}</p>
+        <p className="font-bold text-white">{choice}</p>
         {payload.map((entry: any, index: number) => {
           const rating = entry.name
           const votes = distribution[rating] || 0
@@ -1190,7 +1190,9 @@ function ResultDisplay({ data }: { data: ResultData }) {
                   <div className="flex items-center gap-3">
                     <span className="text-xl font-bold">#{index + 1}</span>
                     <div className="flex-1">
-                      <h3 className="text-lg font-semibold">{choice.name}</h3>
+                      <h3 className="text-lg font-semibold text-white">
+                        {choice.name}
+                      </h3>
                       <p className="text-sm">
                         Mention{" "}
                         <span
@@ -1207,7 +1209,7 @@ function ResultDisplay({ data }: { data: ResultData }) {
                       </p>
                     </div>
                     {isWinner(choice) ? (
-                      <div className="flex gap-2">
+                      <div className="flex gap-2 text-white">
                         <span>Validation</span>
                         <Sparkles />
                       </div>
@@ -1300,7 +1302,7 @@ function ResultDisplay({ data }: { data: ResultData }) {
                     {sortedChoices.map((_, index) => (
                       <div
                         key={index}
-                        className="absolute flex items-center justify-end text-right"
+                        className="absolute flex items-center justify-end text-right text-white"
                         style={{
                           top: `${yAxisPositions[index]}px`,
                           transform: "translateY(-50%)",
@@ -1320,7 +1322,7 @@ function ResultDisplay({ data }: { data: ResultData }) {
               </CardHeader>
               <CardContent>
                 <div className="flex flex-col gap-2">
-                  <p className="text-5xl font-semibold">
+                  <p className="text-5xl font-semibold text-white">
                     {participationRateDisplay} %
                   </p>
                 </div>

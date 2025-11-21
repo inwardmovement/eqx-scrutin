@@ -79,12 +79,12 @@ const ratingOrder = [
 
 // Couleurs des mentions
 const ratingColors = {
-  Excellent: "#16a34a", // green-600
-  Bien: "#4ade80", // green-400
-  Passable: "#d1d5db", // gray-300
-  Insuffisant: "#fb923c", // orange-400 (alt #f87171 red-400)
-  "À rejeter": "#ef4444", // red-500 (alt #eb2929 red-600 avec contraste amélioré)
-  Abstention: "#374151", // gray-700 (gris foncé)
+  Excellent: "#22c55e", // green-500
+  Bien: "#6ee7b7", // emerald-300
+  Passable: "#9ca3af", // gray-400
+  Insuffisant: "#fdba74", // orange-300
+  "À rejeter": "#f87171", // red-400
+  Abstention: "#374151", // gray-700
 }
 
 // Tooltip pourcentages

@@ -14,7 +14,7 @@ export function Body({ children }: { children: React.ReactNode }) {
   }, [])
 
   return (
-    <body className="cursor-default">
+    <body className="cursor-default bg-brand-dark-blue">
       <TooltipProvider>{children}</TooltipProvider>
       <Toaster richColors />
     </body>

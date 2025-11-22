@@ -11,7 +11,7 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        background: "var(--background)",
+        background: "hsl(var(--background))",
         foreground: "var(--foreground)",
         "brand-yellow": "#FFD412",
         "brand-light-blue": "#dce6f5",
@@ -24,10 +24,6 @@ const config: Config = {
         popover: {
           DEFAULT: "hsl(var(--popover))",
           foreground: "hsl(var(--popover-foreground))",
-        },
-        dialog: {
-          DEFAULT: "hsl(var(--dialog))",
-          foreground: "hsl(var(--dialog-foreground))",
         },
         primary: {
           DEFAULT: "hsl(var(--primary))",

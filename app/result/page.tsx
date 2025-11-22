@@ -803,7 +803,7 @@ function ParticipationMenu({
         Participation
       </DropdownMenuItem>
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
-        <DialogContent className="bg-dialog sm:max-w-[300px]">
+        <DialogContent className="sm:max-w-[300px]">
           <DialogHeader>
             <DialogTitle>Participation</DialogTitle>
           </DialogHeader>
@@ -821,7 +821,7 @@ function ParticipationMenu({
                 value={votersInput}
                 onChange={handleVotersChange}
                 onKeyDown={handlePreventInvalidInput}
-                className="bg-dialog px-2 py-1.5 text-sm"
+                className="px-2 py-1.5 text-sm"
               />
             </Field>
             <Field className="w-full gap-1">
@@ -839,7 +839,7 @@ function ParticipationMenu({
                 value={electorateInput}
                 onChange={handleElectorateChange}
                 onKeyDown={handlePreventInvalidInput}
-                className="bg-dialog px-2 py-1.5 text-sm"
+                className="px-2 py-1.5 text-sm"
               />
             </Field>
           </FieldGroup>
@@ -853,9 +853,7 @@ function ParticipationMenu({
               Effacer
             </Button>
             <DialogClose asChild>
-              <Button variant="outline" className="bg-dialog">
-                Fermer
-              </Button>
+              <Button variant="outline">Fermer</Button>
             </DialogClose>
           </DialogFooter>
         </DialogContent>

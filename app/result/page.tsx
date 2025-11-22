@@ -99,7 +99,7 @@ const ratingColors = {
   Passable: "#9ca3af", // gray-400
   Insuffisant: "#fdba74", // orange-300
   "À rejeter": "#f87171", // red-400
-  Abstention: "#374151", // gray-700
+  Abstention: "#4b5563", // gray-600
 }
 
 const PARTICIPATION_PARAM_KEY = "p"

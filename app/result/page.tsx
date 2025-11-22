@@ -336,27 +336,34 @@ function ResultContent() {
       return choiceIndex <= thresholdIndex
     })
 
+    const hasSingleChoice = sortedChoices.length === 1
     const classementSynthese = sortedChoices
-      .map(
-        (choice, index) =>
-          `#${index + 1} "${choice.name}"\nMention ${choice.mention} (${choice.score})`,
+      .map((choice, index) =>
+        hasSingleChoice
+          ? `"${choice.name}"\nMention ${choice.mention} (${choice.score})`
+          : `#${index + 1} "${choice.name}"\nMention ${choice.mention} (${choice.score})`,
       )
       .join("\n\n")
 
     let textToCopy = ""
     if (winningChoices.length === 0) {
-      textToCopy = `Le scrutin a abouti au classement suivant :\n\n${classementSynthese}`
+      const introText = hasSingleChoice
+        ? "Le scrutin a abouti à la mention suivante :"
+        : "Le scrutin a abouti au classement suivant :"
+      textToCopy = `${introText}\n\n${classementSynthese}`
     } else if (winningChoices.length === 1) {
       const winner = winningChoices[0]
       textToCopy = `Le scrutin a validé l'option "${winner.name}" avec la mention ${winner.mention} (${winner.score}).`
     } else {
+      const hasSingleWinningChoice = winningChoices.length === 1
       textToCopy = "Le scrutin a validé les options suivantes :\n"
       winningChoices.forEach((choice, index) => {
-        textToCopy += `#${index + 1} "${choice.name}" avec la mention ${choice.mention} (${choice.score})${index < winningChoices.length - 1 ? "\n" : ""}`
+        const rankingPrefix = hasSingleWinningChoice ? "" : `#${index + 1} `
+        textToCopy += `${rankingPrefix}"${choice.name}" avec la mention ${choice.mention} (${choice.score})${index < winningChoices.length - 1 ? "\n" : ""}`
       })
     }
 
-    if (winningChoices.length > 0) {
+    if (winningChoices.length > 0 && !hasSingleChoice) {
       textToCopy += `\n\nClassement complet :\n\n${classementSynthese}`
     }
 
@@ -997,6 +1004,9 @@ function ResultDisplay({ data }: { data: ResultData }) {
     }))
     .sort((a, b) => parseFloat(b.score) - parseFloat(a.score))
 
+  // Détecter s'il n'y a qu'un seul choix
+  const hasSingleChoice = sortedChoices.length === 1
+
   // Fonction pour déterminer si un choix est gagnant selon le seuil
   const isWinner = (choice: (typeof sortedChoices)[0]) => {
     if (victoryThreshold === "none") {
@@ -1168,7 +1178,7 @@ function ResultDisplay({ data }: { data: ResultData }) {
       <div className="mb-8 flex flex-col justify-stretch gap-6 md:flex-row">
         <Card className="w-full border-none bg-brand-dark-blue shadow-none">
           <CardHeader>
-            <CardTitle>Classement</CardTitle>
+            <CardTitle>{hasSingleChoice ? "Mention" : "Classement"}</CardTitle>
           </CardHeader>
           {isThresholdValidation && !hasValidatedOption ? (
             <div className="px-4 pb-4">
@@ -1186,7 +1196,9 @@ function ResultDisplay({ data }: { data: ResultData }) {
                     isWinner(choice) ? "bg-muted-foreground/10" : ""
                   }`}>
                   <div className="flex items-center gap-3">
-                    <span className="text-xl font-bold">#{index + 1}</span>
+                    {!hasSingleChoice && (
+                      <span className="text-xl font-bold">#{index + 1}</span>
+                    )}
                     <div className="flex-1">
                       <h3 className="text-lg font-semibold text-white">
                         {choice.name}
@@ -1260,7 +1272,9 @@ function ResultDisplay({ data }: { data: ResultData }) {
                       dataKey="name"
                       type="category"
                       tick={{ fill: "transparent" }}
-                      tickFormatter={(value, index) => `#${index + 1}`}
+                      tickFormatter={(value, index) =>
+                        hasSingleChoice ? "" : `#${index + 1}`
+                      }
                       interval={0}
                       width={0}
                       axisLine={false}
@@ -1295,7 +1309,7 @@ function ResultDisplay({ data }: { data: ResultData }) {
                   </BarChart>
                 </ResponsiveContainer>
                 {/* YAxis personnalisé pour l'alignement avec les lignes de la grille */}
-                {yAxisPositions.length > 0 && (
+                {yAxisPositions.length > 0 && !hasSingleChoice && (
                   <div className="absolute left-0 top-0 h-full w-[45px]">
                     {sortedChoices.map((_, index) => (
                       <div

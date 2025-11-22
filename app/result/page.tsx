@@ -339,7 +339,7 @@ function ResultContent() {
     const classementSynthese = sortedChoices
       .map(
         (choice, index) =>
-          `#${index + 1} ${choice.name}\nMention ${choice.mention} (${choice.score})`,
+          `#${index + 1} "${choice.name}"\nMention ${choice.mention} (${choice.score})`,
       )
       .join("\n\n")
 

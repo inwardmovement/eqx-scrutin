@@ -96,5 +96,5 @@ try {
 
 # Développement
 
-- `pnpm i` pour installer les dépendances puis `npm run dev` pour développer en local.
+- `npm i` pour installer les dépendances puis `npm run dev` pour développer en local.
 - Recommandation d'utiliser [Cursor](https://www.cursor.com/).

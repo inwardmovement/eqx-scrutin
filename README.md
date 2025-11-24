@@ -1,12 +1,12 @@
 # Fonctionnalités
 
-- Analyse des votes selon la méthode du [jugement médian](https://fr.wikipedia.org/wiki/Jugement_usuel).
-- Gestion de l'abstention avec la mention "Abstention".
-- Critère de validation.
-- Taux de participation.
-- Partage du résultat.
+- Analyse des votes au [jugement médian](https://fr.wikipedia.org/wiki/Jugement_usuel)
+- Gestion de l'abstention avec la mention "Abstention"
+- Critère de validation
+- Taux de participation
+- Copie du résultat au format lien, texte ou code
 
-![image](https://github.com/user-attachments/assets/3bad57e8-38e6-4496-bb30-583b7f64a4f7)
+<img width="1948" height="1158" alt="image" src="https://github.com/user-attachments/assets/eee2fad6-d28b-4cbb-a8cc-463667997706" />
 
 # API
 

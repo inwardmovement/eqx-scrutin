@@ -8,6 +8,7 @@ import {
   useContext,
   useRef,
   useMemo,
+  useCallback,
   useId,
 } from "react"
 import type { ChangeEvent, KeyboardEvent } from "react"
@@ -102,32 +103,50 @@ const ratingColors = {
   Abstention: "#4b5563", // gray-600
 }
 
-const PARTICIPATION_PARAM_KEY = "p"
+const PARTICIPATION_PARAM_KEY = "c" // taille du corps électoral
 const PARTICIPATION_DEBOUNCE_DELAY_MS = 200
 
+// Calcule le nombre total de votants depuis les données de l'URL
+const calculateVotersFromData = (urlData: string | null): number | null => {
+  if (!urlData) return null
+  try {
+    const parsedData = parseUrlData(urlData)
+    const firstChoice = Object.values(parsedData.distribution)[0]
+    if (!firstChoice) return null
+    const totalVotes = Object.entries(firstChoice.distribution)
+      .filter(([mention]) => mention !== "Abstention")
+      .reduce((sum, [, count]) => sum + (count as number), 0)
+    return totalVotes > 0 ? totalVotes : null
+  } catch (error) {
+    console.error("Error parsing data:", error)
+    return null
+  }
+}
+
 // Analyse le paramètre de participation pour retourner les valeurs brutes
+// Le paramètre "c" ne contient maintenant que la taille du corps électoral
 const getParticipationInputs = (rawParam: string | null) => {
   if (!rawParam) {
-    return { voters: "", electorate: "" }
+    return { electorate: "" }
   }
-  const [rawVoters = "", rawElectorate = ""] = rawParam.split("~")
-  return { voters: rawVoters, electorate: rawElectorate }
+  return { electorate: rawParam }
 }
 
 // Analyse le paramètre de participation pour retourner des nombres valides
-const parseParticipationNumbers = (rawParam: string | null) => {
+// Le nombre de votants est calculé depuis les données de l'URL
+const parseParticipationNumbers = (
+  rawParam: string | null,
+  urlData: string | null,
+) => {
   if (!rawParam) {
     return null
   }
-  const [rawVoters, rawElectorate] = rawParam.split("~")
-  const voters = Number(rawVoters)
-  const electorate = Number(rawElectorate)
-  if (
-    Number.isNaN(voters) ||
-    Number.isNaN(electorate) ||
-    voters < 0 ||
-    electorate <= 0
-  ) {
+  const electorate = Number(rawParam)
+  if (Number.isNaN(electorate) || electorate <= 0) {
+    return null
+  }
+  const voters = calculateVotersFromData(urlData)
+  if (voters === null || voters < 0) {
     return null
   }
   return { voters, electorate }
@@ -682,18 +701,54 @@ function ParticipationMenu({
   const router = useRouter()
   const searchParams = useSearchParams()
   const participationParam = searchParams.get(PARTICIPATION_PARAM_KEY)
-  const { voters: initialVoters, electorate: initialElectorate } =
+  const { electorate: initialElectorate } =
     getParticipationInputs(participationParam)
-  const [votersInput, setVotersInput] = useState(initialVoters)
   const [electorateInput, setElectorateInput] = useState(initialElectorate)
   const debounceRef = useRef<NodeJS.Timeout | null>(null)
   const votersInputId = useId()
   const electorateInputId = useId()
   const invalidNumericKeys = useMemo(() => ["e", "E", "+", "-", ".", ","], [])
 
+  // Calculer le nombre total de votants depuis les données de l'URL
+  const totalVotersFromData = useMemo(() => {
+    const urlData = searchParams.get("data")
+    const voters = calculateVotersFromData(urlData)
+    return voters !== null ? voters.toString() : ""
+  }, [searchParams])
+
+  const pushParticipationToUrl = (nextElectorate: string) => {
+    const params =
+      typeof window !== "undefined"
+        ? new URLSearchParams(window.location.search)
+        : new URLSearchParams(searchParams.toString())
+    const trimmedElectorate = nextElectorate.trim()
+
+    if (trimmedElectorate !== "") {
+      const electorateNumber = Number(trimmedElectorate)
+      const isValid = !Number.isNaN(electorateNumber) && electorateNumber > 0
+
+      if (isValid) {
+        if (params.get(PARTICIPATION_PARAM_KEY) === trimmedElectorate) {
+          return
+        }
+        params.set(PARTICIPATION_PARAM_KEY, trimmedElectorate)
+        router.push(`?${params.toString()}`, { scroll: false })
+        return
+      }
+    }
+
+    // Supprimer le paramètre si le corps électoral est vide
+    if (trimmedElectorate === "") {
+      if (!params.has(PARTICIPATION_PARAM_KEY)) {
+        return
+      }
+      params.delete(PARTICIPATION_PARAM_KEY)
+      router.push(`?${params.toString()}`, { scroll: false })
+    }
+  }
+
   useEffect(() => {
-    const { voters, electorate } = getParticipationInputs(participationParam)
-    setVotersInput(prev => (prev === voters ? prev : voters))
+    const { electorate } = getParticipationInputs(participationParam)
     setElectorateInput(prev => (prev === electorate ? prev : electorate))
   }, [participationParam])
 
@@ -705,72 +760,19 @@ function ParticipationMenu({
     }
   }, [])
 
-  const pushParticipationToUrl = (
-    nextVoters: string,
-    nextElectorate: string,
-  ) => {
-    const params =
-      typeof window !== "undefined"
-        ? new URLSearchParams(window.location.search)
-        : new URLSearchParams(searchParams.toString())
-    const trimmedVoters = nextVoters.trim()
-    const trimmedElectorate = nextElectorate.trim()
-    const hasBothValues = trimmedVoters !== "" && trimmedElectorate !== ""
-    const hasNoValues = trimmedVoters === "" && trimmedElectorate === ""
-
-    if (hasBothValues) {
-      const votersNumber = Number(trimmedVoters)
-      const electorateNumber = Number(trimmedElectorate)
-      const isValid =
-        !Number.isNaN(votersNumber) &&
-        !Number.isNaN(electorateNumber) &&
-        votersNumber >= 0 &&
-        electorateNumber > 0
-
-      if (isValid) {
-        const formattedValue = `${votersNumber}~${electorateNumber}`
-        if (params.get(PARTICIPATION_PARAM_KEY) === formattedValue) {
-          return
-        }
-        params.set(PARTICIPATION_PARAM_KEY, formattedValue)
-        router.push(`?${params.toString()}`, { scroll: false })
-        return
-      }
-    }
-
-    // Ne supprimer le paramètre que si les deux champs sont vides
-    // Cela permet de garder la valeur d'un champ même si l'autre est effacé
-    if (hasNoValues) {
-      if (!params.has(PARTICIPATION_PARAM_KEY)) {
-        return
-      }
-      params.delete(PARTICIPATION_PARAM_KEY)
-      router.push(`?${params.toString()}`, { scroll: false })
-    }
-  }
-
-  const scheduleParticipationUpdate = (
-    nextVoters: string,
-    nextElectorate: string,
-  ) => {
+  const scheduleParticipationUpdate = (nextElectorate: string) => {
     if (debounceRef.current) {
       clearTimeout(debounceRef.current)
     }
     debounceRef.current = setTimeout(() => {
-      pushParticipationToUrl(nextVoters, nextElectorate)
+      pushParticipationToUrl(nextElectorate)
     }, PARTICIPATION_DEBOUNCE_DELAY_MS)
-  }
-
-  const handleVotersChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const nextValue = event.target.value
-    setVotersInput(nextValue)
-    scheduleParticipationUpdate(nextValue, electorateInput)
   }
 
   const handleElectorateChange = (event: ChangeEvent<HTMLInputElement>) => {
     const nextValue = event.target.value
     setElectorateInput(nextValue)
-    scheduleParticipationUpdate(votersInput, nextValue)
+    scheduleParticipationUpdate(nextValue)
   }
 
   const handlePreventInvalidInput = (
@@ -783,15 +785,6 @@ function ParticipationMenu({
       event.preventDefault()
       setIsOpen(false)
     }
-  }
-
-  const handleClear = () => {
-    if (debounceRef.current) {
-      clearTimeout(debounceRef.current)
-    }
-    setVotersInput("")
-    setElectorateInput("")
-    pushParticipationToUrl("", "")
   }
 
   const handleItemClick = (event: Event | React.SyntheticEvent) => {
@@ -825,9 +818,8 @@ function ParticipationMenu({
                 pattern="[0-9]*"
                 aria-label="Nombre de votants"
                 placeholder=""
-                value={votersInput}
-                onChange={handleVotersChange}
-                onKeyDown={handlePreventInvalidInput}
+                value={totalVotersFromData}
+                disabled
                 className="px-2 py-1.5 text-sm"
               />
             </Field>
@@ -850,19 +842,6 @@ function ParticipationMenu({
               />
             </Field>
           </FieldGroup>
-          <DialogFooter className="gap-2 sm:gap-0">
-            <Button
-              type="button"
-              variant="ghost"
-              aria-label="Effacer le taux de participation"
-              onClick={handleClear}
-              className="px-4 py-2">
-              Effacer
-            </Button>
-            <DialogClose asChild>
-              <Button variant="outline">Fermer</Button>
-            </DialogClose>
-          </DialogFooter>
         </DialogContent>
       </Dialog>
     </>
@@ -964,9 +943,10 @@ function ResultDisplay({ data }: { data: ResultData }) {
   const chartContainerRef = useRef<HTMLDivElement>(null)
   const [yAxisPositions, setYAxisPositions] = useState<number[]>([])
   const participationParam = searchParams.get(PARTICIPATION_PARAM_KEY)
+  const urlData = searchParams.get("data")
   const participationNumbers = useMemo(
-    () => parseParticipationNumbers(participationParam),
-    [participationParam],
+    () => parseParticipationNumbers(participationParam, urlData),
+    [participationParam, urlData],
   )
   const participationRate = useMemo(() => {
     if (!participationNumbers) {

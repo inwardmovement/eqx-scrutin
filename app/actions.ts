@@ -72,9 +72,6 @@ export async function processDocument(
       // Get choices from header
       const choices = lines[0]
 
-      // Vérifier le format du fichier (5 ou 6 mentions)
-      const isVersion6 = formData.get("isVersion6") === "true"
-
       // Construire l'ensemble des mentions sur toutes les lignes de votes
       const allMentions = new Set<string>()
       for (let i = 1; i < lines.length; i++) {
@@ -82,37 +79,27 @@ export async function processDocument(
           allMentions.add(mention)
         }
       }
-      
+
       // Vérifier si l'abstention est présente
       const hasAbstention = allMentions.has("Abstention")
-      
-      // Retirer l'abstention du comptage pour vérifier le format
-      if (hasAbstention) {
-        allMentions.delete("Abstention")
-      }
-      const mentionCount = allMentions.size
 
-      // Vérifier la cohérence entre le format du fichier et l'option sélectionnée
-      if (mentionCount === 6 && !isVersion6) {
-        return {
-          success: false,
-          error:
-            "Ce fichier utilise le format à 6 mentions : cocher la case correspondante.",
-        }
+      // Détecter automatiquement le format basé sur les mentions présentes
+      // Si "Très bien" ou "Assez bien" sont présents, c'est le format 6 mentions
+      // Sinon, c'est le format 5 mentions (avec "Excellent")
+      const hasVersion6Mentions =
+        allMentions.has("Très bien") || allMentions.has("Assez bien")
+      const hasVersion5Mentions = allMentions.has("Excellent")
+
+      // Utiliser l'option fournie par défaut, mais détecter automatiquement si possible
+      let isVersion6 = formData.get("isVersion6") === "true"
+
+      // Détection automatique : si on trouve des mentions spécifiques à un format, l'utiliser
+      if (hasVersion6Mentions && !hasVersion5Mentions) {
+        isVersion6 = true
+      } else if (hasVersion5Mentions && !hasVersion6Mentions) {
+        isVersion6 = false
       }
-      if (mentionCount === 5 && isVersion6) {
-        return {
-          success: false,
-          error:
-            'Ce fichier utilise le format à 5 mentions : décocher la case "Version 6 mentions".',
-        }
-      }
-      if (mentionCount !== 5 && mentionCount !== 6) {
-        return {
-          success: false,
-          error: `Format de fichier invalide : ${mentionCount} mentions trouvées. Le fichier doit contenir exactement 5 ou 6 mentions.`,
-        }
-      }
+      // Si les deux sont présents ou aucun, on utilise l'option fournie par défaut
 
       // Initialize distribution data
       const distribution: { [key: string]: any } = {}
@@ -229,7 +216,9 @@ export async function processDocument(
         if (hasAbstention) {
           delete distributionWithoutAbstention["Abstention"]
         }
-        const dominantMention = findMajorityMention(distributionWithoutAbstention)
+        const dominantMention = findMajorityMention(
+          distributionWithoutAbstention,
+        )
         const dominantMentionIndex = mentionOrder.indexOf(dominantMention)
 
         // Calculer Pc (partisans) - somme des votes strictement supérieurs à la mention majoritaire

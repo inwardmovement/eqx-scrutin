@@ -65,7 +65,8 @@ export async function POST(request: NextRequest) {
     // Formater les données pour l'URL
     const urlData = formatDataForUrl(result.data)
 
-    // Construire l'URL de résultat en préservant les ~ (sans les encoder en %7E)
+    // Construire l'URL de résultat en encodant uniquement le paramètre data
+    // et en préservant les ~ (sans les encoder en %7E)
     const baseUrl =
       process.env.NEXT_PUBLIC_BASE_URL || "https://eqx-scrutin.vercel.app"
     const encodedUrlData = encodeURIComponent(urlData).replace(/%7E/g, "~")

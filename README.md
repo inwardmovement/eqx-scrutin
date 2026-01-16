@@ -10,7 +10,7 @@
 
 # API
 
-<img width="1742" height="973" alt="image" src="https://github.com/user-attachments/assets/26acc87f-c284-46bb-bfa4-88922d91bfd2" />
+<img width="1729" height="959" alt="image" src="https://github.com/user-attachments/assets/10502fe7-2ca7-49c3-a91c-9746a350a527" />
 
 ```
 <?php

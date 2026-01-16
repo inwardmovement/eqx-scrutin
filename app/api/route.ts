@@ -65,10 +65,11 @@ export async function POST(request: NextRequest) {
     // Formater les données pour l'URL
     const urlData = formatDataForUrl(result.data)
 
-    // Construire l'URL de résultat
+    // Construire l'URL de résultat en préservant les ~ (sans les encoder en %7E)
     const baseUrl =
       process.env.NEXT_PUBLIC_BASE_URL || "https://eqx-scrutin.vercel.app"
-    const resultUrl = `${baseUrl}/result?data=${encodeURIComponent(urlData)}`
+    const encodedUrlData = encodeURIComponent(urlData).replace(/%7E/g, "~")
+    const resultUrl = `${baseUrl}/result?data=${encodedUrlData}`
 
     // Construire l'URL d'embed
     const embedUrl = `${resultUrl}&d=embed`

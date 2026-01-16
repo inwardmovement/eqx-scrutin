@@ -400,9 +400,32 @@ function ResultContent() {
 
   // Handle copying embed code
   const handleCopyEmbedCode = () => {
-    const currentUrl = new URL(window.location.href)
-    currentUrl.searchParams.set("d", "embed")
-    const embedUrl = currentUrl.toString()
+    // Récupérer le paramètre data depuis searchParams (déjà décodé par le navigateur)
+    const urlData = searchParams.get("data")
+
+    // Construire l'URL manuellement en préservant les ~ (sans les encoder en %7E)
+    const baseUrl = window.location.origin + window.location.pathname
+    const urlParts: string[] = []
+
+    // Encoder le paramètre data mais préserver les ~ en les remplaçant après encodage
+    if (urlData) {
+      const encoded = encodeURIComponent(urlData).replace(/%7E/g, "~")
+      urlParts.push(`data=${encoded}`)
+    }
+
+    // Ajouter les autres paramètres existants
+    const v = searchParams.get("v")
+    const s = searchParams.get("s")
+    const n = searchParams.get("n")
+    if (v) urlParts.push(`v=${v}`)
+    if (s) urlParts.push(`s=${s}`)
+    if (n) urlParts.push(`n=${n}`)
+
+    // Ajouter le paramètre embed
+    urlParts.push("d=embed")
+
+    // Construire l'URL finale
+    const embedUrl = `${baseUrl}?${urlParts.join("&")}`
 
     const embedCode = generateEmbedCode(embedUrl)
 

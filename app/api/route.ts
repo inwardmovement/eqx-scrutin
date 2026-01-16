@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { processDocument } from "../actions"
 import { formatDataForUrl } from "../utils/url-format"
+import { generateEmbedCode } from "../utils/embed-code"
 
 export async function POST(request: NextRequest) {
   try {
@@ -69,9 +70,16 @@ export async function POST(request: NextRequest) {
       process.env.NEXT_PUBLIC_BASE_URL || "https://eqx-scrutin.vercel.app"
     const resultUrl = `${baseUrl}/result?data=${encodeURIComponent(urlData)}`
 
+    // Construire l'URL d'embed
+    const embedUrl = `${resultUrl}&d=embed`
+
+    // Générer le code d'intégration iframe
+    const resultEmbedCode = generateEmbedCode(embedUrl)
+
     return NextResponse.json({
       success: true,
       result: resultUrl,
+      resultEmbed: resultEmbedCode,
     })
   } catch (error) {
     console.error("Erreur API:", error)

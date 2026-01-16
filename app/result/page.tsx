@@ -67,6 +67,7 @@ import {
   Users,
 } from "lucide-react"
 import { parseUrlData } from "../utils/url-format"
+import { generateEmbedCode } from "../utils/embed-code"
 import Script from "next/script"
 
 type ResultData = {
@@ -403,15 +404,7 @@ function ResultContent() {
     currentUrl.searchParams.set("d", "embed")
     const embedUrl = currentUrl.toString()
 
-    const embedCode = `<iframe title="Résultat du scrutin" id="iframeResize" style="border: none; width: 100%; height: 500px" src="${embedUrl}"></iframe>
-    <script>
-      const iframeResize = document.querySelector("#iframeResize")
-      window.addEventListener("message", function (event) {
-        if (event.data.type === "iframeHeight") {
-          iframeResize.style.height = event.data.height + "px"
-        }
-      })
-    </script>`
+    const embedCode = generateEmbedCode(embedUrl)
 
     navigator.clipboard
       .writeText(embedCode)

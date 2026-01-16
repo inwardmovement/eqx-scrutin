@@ -65,17 +65,13 @@ export async function POST(request: NextRequest) {
     // Formater les données pour l'URL
     const urlData = formatDataForUrl(result.data)
 
-    // Construire l'URL de résultat en utilisant URL et URLSearchParams
+    // Construire l'URL de résultat
     const baseUrl =
       process.env.NEXT_PUBLIC_BASE_URL || "https://eqx-scrutin.vercel.app"
-    const resultUrlObj = new URL(`${baseUrl}/result`)
-    resultUrlObj.searchParams.set("data", urlData)
-    const resultUrl = resultUrlObj.toString()
+    const resultUrl = `${baseUrl}/result?data=${encodeURIComponent(urlData)}`
 
     // Construire l'URL d'embed
-    const embedUrlObj = new URL(resultUrl)
-    embedUrlObj.searchParams.set("d", "embed")
-    const embedUrl = embedUrlObj.toString()
+    const embedUrl = `${resultUrl}&d=embed`
 
     // Générer le code d'intégration iframe
     const resultEmbedCode = generateEmbedCode(embedUrl)

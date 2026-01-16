@@ -4,15 +4,12 @@
  * @returns Le code HTML complet pour intégrer l'iframe
  */
 export function generateEmbedCode(embedUrl: string): string {
-  // Échapper l'URL pour l'attribut HTML sans la ré-encoder
-  // L'URL est déjà correctement encodée (avec les ~ préservés)
-  // On échappe uniquement les caractères HTML spéciaux (&, <, >, ", ')
-  const escapedUrl = embedUrl
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#x27;")
+  // Encoder l'URL pour l'attribut HTML en préservant les ~ (sans les encoder en %7E)
+  // On encode l'URL complète mais on remplace %7E par ~ pour préserver les séparateurs
+  const encodedUrl = encodeURI(embedUrl).replace(/%7E/g, "~")
+  
+  // Échapper uniquement les guillemets doubles pour éviter de casser l'attribut HTML
+  const escapedUrl = encodedUrl.replace(/"/g, "&quot;")
   
   return `<iframe title="Résultat du scrutin" id="iframeResize" style="border: none; width: 100%; height: 500px" src="${escapedUrl}"></iframe>
     <script>

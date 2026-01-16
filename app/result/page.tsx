@@ -403,14 +403,14 @@ function ResultContent() {
     // Récupérer le paramètre data depuis searchParams (déjà décodé par le navigateur)
     const urlData = searchParams.get("data")
 
-    // Construire l'URL manuellement en préservant les ~ (sans les encoder en %7E)
+    // Construire l'URL sans encoder (comme dans app/page.tsx et l'API)
+    // L'encodage sera fait dans generateEmbedCode
     const baseUrl = window.location.origin + window.location.pathname
     const urlParts: string[] = []
 
-    // Encoder le paramètre data mais préserver les ~ en les remplaçant après encodage
+    // Ajouter le paramètre data sans encoder
     if (urlData) {
-      const encoded = encodeURIComponent(urlData).replace(/%7E/g, "~")
-      urlParts.push(`data=${encoded}`)
+      urlParts.push(`data=${urlData}`)
     }
 
     // Ajouter les autres paramètres existants

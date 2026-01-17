@@ -443,9 +443,11 @@ function ResultContent() {
     const v = searchParams.get("v")
     const s = searchParams.get("s")
     const n = searchParams.get("n")
+    const c = searchParams.get(RANK_MENTIONS_PARAM_KEY)
     if (v) urlParts.push(`v=${v}`)
     if (s) urlParts.push(`s=${s}`)
     if (n) urlParts.push(`n=${n}`)
+    if (c === "0") urlParts.push(`${RANK_MENTIONS_PARAM_KEY}=0`)
 
     // Ajouter le paramètre embed
     urlParts.push("d=embed")

@@ -1306,7 +1306,7 @@ function ResultDisplay({ data }: { data: ResultData }) {
             <CardHeader>
               <CardTitle>Distribution des votes</CardTitle>
             </CardHeader>
-            <CardContent className="pb-0">
+            <CardContent>
               <div ref={chartContainerRef} className="relative h-80">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart

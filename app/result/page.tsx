@@ -547,7 +547,6 @@ function ResultContent() {
                       <Suspense>
                         <ThresholdSelector />
                       </Suspense>
-                      <DropdownMenuSeparator />
                       <Suspense>
                         <ParticipationMenu
                           isOpen={isParticipationOpen}
@@ -555,7 +554,6 @@ function ResultContent() {
                           isDropdownMenuOpen={isDropdownMenuOpen}
                         />
                       </Suspense>
-                      <DropdownMenuSeparator />
                       <Suspense>
                         <RankMentionsToggle />
                       </Suspense>

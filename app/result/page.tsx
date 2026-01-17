@@ -53,6 +53,7 @@ import {
   DropdownMenuRadioItem,
   DropdownMenuSeparator,
   DropdownMenuLabel,
+  DropdownMenuCheckboxItem,
 } from "@/components/ui/dropdown-menu"
 import { Separator } from "@/components/ui/separator"
 import {
@@ -104,7 +105,8 @@ const ratingColors = {
   Abstention: "#4b5563", // gray-600
 }
 
-const PARTICIPATION_PARAM_KEY = "c" // taille du corps électoral
+const PARTICIPATION_PARAM_KEY = "p" // taille du corps électoral (renommé de "c" à "p")
+const RANK_MENTIONS_PARAM_KEY = "c" // classement des mentions (c=0 pour désactiver)
 const PARTICIPATION_DEBOUNCE_DELAY_MS = 200
 
 // Calcule le nombre total de votants depuis les données de l'URL
@@ -125,7 +127,7 @@ const calculateVotersFromData = (urlData: string | null): number | null => {
 }
 
 // Analyse le paramètre de participation pour retourner les valeurs brutes
-// Le paramètre "c" ne contient maintenant que la taille du corps électoral
+// Le paramètre "p" ne contient maintenant que la taille du corps électoral
 const getParticipationInputs = (rawParam: string | null) => {
   if (!rawParam) {
     return { electorate: "" }
@@ -255,6 +257,20 @@ function useVictoryThreshold() {
   return useContext(VictoryThresholdContext)
 }
 
+// Créer le contexte pour le classement des mentions
+const RankMentionsContext = createContext<{
+  rankMentions: boolean
+  setRankMentions: (value: boolean) => void
+}>({
+  rankMentions: true,
+  setRankMentions: () => {},
+})
+
+// Hook personnalisé pour utiliser le contexte de classement
+function useRankMentions() {
+  return useContext(RankMentionsContext)
+}
+
 function ResultContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -274,6 +290,10 @@ function ResultContent() {
     if (s === "3") return "passable"
     return "top_1"
   })
+  const [rankMentions, setRankMentions] = useState(() => {
+    const c = searchParams.get(RANK_MENTIONS_PARAM_KEY)
+    return c !== "0"
+  })
   const isEmbedded = searchParams.get("d") === "embed"
   const [isParticipationOpen, setParticipationOpen] = useState(false)
   const [isDropdownMenuOpen, setDropdownMenuOpen] = useState(false)
@@ -292,6 +312,12 @@ function ResultContent() {
     else if (s === "2") setVictoryThreshold("bien")
     else if (s === "3") setVictoryThreshold("passable")
     else setVictoryThreshold("top_1")
+  }, [searchParams])
+
+  // Mettre à jour le classement quand les paramètres d'URL changent
+  useEffect(() => {
+    const c = searchParams.get(RANK_MENTIONS_PARAM_KEY)
+    setRankMentions(c !== "0")
   }, [searchParams])
 
   // Reset copy status after delay
@@ -472,111 +498,117 @@ function ResultContent() {
   return (
     <VictoryThresholdContext.Provider
       value={{ victoryThreshold, setVictoryThreshold }}>
-      <main className="flex min-h-screen flex-col p-4 md:p-8">
-        <div className="container mx-auto max-w-6xl">
-          {!isEmbedded && (
-            <div
-              id="header"
-              className="mb-6 flex flex-col items-center justify-between md:flex-row">
-              <div className="flex flex-col items-center md:flex-row md:gap-4">
-                <h1 className="text-3xl font-bold">Résultat du scrutin</h1>
-                <DropdownMenu
-                  modal={false}
-                  open={isDropdownMenuOpen}
-                  onOpenChange={setDropdownMenuOpen}>
-                  <DropdownMenuTrigger
-                    asChild
-                    className={`${copyStatus === "success" ? "focus-visible:ring-0 focus-visible:ring-offset-0" : ""} rounded-full`}>
-                    <Button
-                      variant={getButtonProps().variant}
-                      className={`${getButtonProps().className}`}
-                      size="icon">
-                      {getButtonProps().icon}
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem
-                      onClick={handleCopyLink}
-                      className="gap-2"
-                      disabled={isLoading}>
-                      <Link2 />
-                      Copier le lien
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={handleCopyText}
-                      className="gap-2"
-                      disabled={isLoading}>
-                      <Text />
-                      Copier le texte
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={handleCopyEmbedCode}
-                      className="gap-2"
-                      disabled={isLoading}>
-                      <CodeXml />
-                      Copier le code
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <Suspense>
-                      <ThresholdSelector />
-                    </Suspense>
-                    <DropdownMenuSeparator />
-                    <Suspense>
-                      <ParticipationMenu
-                        isOpen={isParticipationOpen}
-                        setIsOpen={setParticipationOpen}
-                        isDropdownMenuOpen={isDropdownMenuOpen}
-                      />
-                    </Suspense>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem
-                      onClick={handleReturnHome}
-                      className="gap-2"
-                      disabled={isLoading}>
-                      <Plus />
-                      Nouveau scrutin
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+      <RankMentionsContext.Provider value={{ rankMentions, setRankMentions }}>
+        <main className="flex min-h-screen flex-col p-4 md:p-8">
+          <div className="container mx-auto max-w-6xl">
+            {!isEmbedded && (
+              <div
+                id="header"
+                className="mb-6 flex flex-col items-center justify-between md:flex-row">
+                <div className="flex flex-col items-center md:flex-row md:gap-4">
+                  <h1 className="text-3xl font-bold">Résultat du scrutin</h1>
+                  <DropdownMenu
+                    modal={false}
+                    open={isDropdownMenuOpen}
+                    onOpenChange={setDropdownMenuOpen}>
+                    <DropdownMenuTrigger
+                      asChild
+                      className={`${copyStatus === "success" ? "focus-visible:ring-0 focus-visible:ring-offset-0" : ""} rounded-full`}>
+                      <Button
+                        variant={getButtonProps().variant}
+                        className={`${getButtonProps().className}`}
+                        size="icon">
+                        {getButtonProps().icon}
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem
+                        onClick={handleCopyLink}
+                        className="gap-2"
+                        disabled={isLoading}>
+                        <Link2 />
+                        Copier le lien
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={handleCopyText}
+                        className="gap-2"
+                        disabled={isLoading}>
+                        <Text />
+                        Copier le texte
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={handleCopyEmbedCode}
+                        className="gap-2"
+                        disabled={isLoading}>
+                        <CodeXml />
+                        Copier le code
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <Suspense>
+                        <ThresholdSelector />
+                      </Suspense>
+                      <DropdownMenuSeparator />
+                      <Suspense>
+                        <ParticipationMenu
+                          isOpen={isParticipationOpen}
+                          setIsOpen={setParticipationOpen}
+                          isDropdownMenuOpen={isDropdownMenuOpen}
+                        />
+                      </Suspense>
+                      <DropdownMenuSeparator />
+                      <Suspense>
+                        <RankMentionsToggle />
+                      </Suspense>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem
+                        onClick={handleReturnHome}
+                        className="gap-2"
+                        disabled={isLoading}>
+                        <Plus />
+                        Nouveau scrutin
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+                <Image
+                  src={Logo}
+                  alt="Logo Equinoxe"
+                  width={150}
+                  height={70}
+                  className="hidden md:block"
+                />
               </div>
-              <Image
-                src={Logo}
-                alt="Logo Equinoxe"
-                width={150}
-                height={70}
-                className="hidden md:block"
-              />
-            </div>
-          )}
+            )}
 
-          {!isEmbedded && <Separator className="mb-8 bg-brand-light-blue" />}
+            {!isEmbedded && <Separator className="mb-8 bg-brand-light-blue" />}
 
-          <Suspense>
-            <ResultData setData={setData} setIsLoading={setIsLoading} />
-          </Suspense>
+            <Suspense>
+              <ResultData setData={setData} setIsLoading={setIsLoading} />
+            </Suspense>
 
-          {isLoading ? (
-            <LoadingContent />
-          ) : data ? (
-            <ResultDisplay data={data} />
-          ) : null}
-          {!isEmbedded && (
-            <div
-              id="footer"
-              className="flex flex-row items-center gap-2 space-y-0 text-xs">
-              <div>
-                Résultat calculé au{" "}
-                <Link
-                  href="https://fr.wikipedia.org/wiki/Jugement_usuel"
-                  target="_blank"
-                  className="">
-                  Jugement médian
-                </Link>
+            {isLoading ? (
+              <LoadingContent />
+            ) : data ? (
+              <ResultDisplay data={data} />
+            ) : null}
+            {!isEmbedded && (
+              <div
+                id="footer"
+                className="flex flex-row items-center gap-2 space-y-0 text-xs">
+                <div>
+                  Résultat calculé au{" "}
+                  <Link
+                    href="https://fr.wikipedia.org/wiki/Jugement_usuel"
+                    target="_blank"
+                    className="">
+                    Jugement médian
+                  </Link>
+                </div>
               </div>
-            </div>
-          )}
-        </div>
-      </main>
+            )}
+          </div>
+        </main>
+      </RankMentionsContext.Provider>
     </VictoryThresholdContext.Provider>
   )
 }
@@ -864,6 +896,33 @@ function ParticipationMenu({
   )
 }
 
+function RankMentionsToggle() {
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const { rankMentions, setRankMentions } = useRankMentions()
+
+  const handleToggle = (checked: boolean) => {
+    setRankMentions(checked)
+    const params = new URLSearchParams(searchParams.toString())
+    if (checked) {
+      params.delete(RANK_MENTIONS_PARAM_KEY)
+    } else {
+      params.set(RANK_MENTIONS_PARAM_KEY, "0")
+    }
+    const queryString = params.toString().replace(/\+/g, "%20")
+    router.push(`?${queryString}`, { scroll: false })
+  }
+
+  return (
+    <DropdownMenuCheckboxItem
+      checked={rankMentions}
+      onCheckedChange={handleToggle}
+      onSelect={event => event.preventDefault()}>
+      Classer les mentions
+    </DropdownMenuCheckboxItem>
+  )
+}
+
 function ResultData({
   setData,
   setIsLoading,
@@ -955,6 +1014,7 @@ function LoadingContent() {
 
 function ResultDisplay({ data }: { data: ResultData }) {
   const { victoryThreshold } = useVictoryThreshold()
+  const { rankMentions } = useRankMentions()
   const searchParams = useSearchParams()
   const chartContainerRef = useRef<HTMLDivElement>(null)
   const [yAxisPositions, setYAxisPositions] = useState<number[]>([])
@@ -992,13 +1052,18 @@ function ResultDisplay({ data }: { data: ResultData }) {
     return participationNumbers.electorate.toLocaleString("fr-FR")
   }, [participationNumbers])
 
-  // Trier les choix par score
-  const sortedChoices = Object.entries(data.distribution)
-    .map(([name, data]) => ({
+  // Trier les choix par score ou conserver l'ordre original
+  const sortedChoices = useMemo(() => {
+    const entries = Object.entries(data.distribution).map(([name, data]) => ({
       name,
       ...data,
     }))
-    .sort((a, b) => parseFloat(b.score) - parseFloat(a.score))
+    if (rankMentions) {
+      return entries.sort((a, b) => parseFloat(b.score) - parseFloat(a.score))
+    }
+    // Conserver l'ordre original du fichier
+    return entries
+  }, [data.distribution, rankMentions])
 
   // Détecter s'il n'y a qu'un seul choix
   const hasSingleChoice = sortedChoices.length === 1
@@ -1174,7 +1239,13 @@ function ResultDisplay({ data }: { data: ResultData }) {
       <div className="mb-8 flex flex-col justify-stretch gap-6 md:flex-row">
         <Card className="w-full border-none bg-brand-dark-blue shadow-none">
           <CardHeader>
-            <CardTitle>{hasSingleChoice ? "Mention" : "Classement"}</CardTitle>
+            <CardTitle>
+              {hasSingleChoice
+                ? "Mention"
+                : rankMentions
+                  ? "Classement"
+                  : "Mentions"}
+            </CardTitle>
           </CardHeader>
           {isThresholdValidation && !hasValidatedOption ? (
             <div className="px-4 pb-4">

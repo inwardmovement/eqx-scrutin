@@ -1245,7 +1245,7 @@ function ResultDisplay({ data }: { data: ResultData }) {
       <div className="mb-8 flex flex-col justify-stretch gap-6 md:flex-row">
         <Card className="w-full border-none bg-brand-dark-blue shadow-none">
           <CardHeader>
-            <CardTitle className={isEmbedded ? "text-xl" : ""}>
+            <CardTitle}>
               {hasSingleChoice
                 ? "Mention"
                 : rankMentions
@@ -1306,7 +1306,7 @@ function ResultDisplay({ data }: { data: ResultData }) {
         <div className="flex w-full flex-col gap-6">
           <Card className="border-none bg-brand-dark-blue shadow-none">
             <CardHeader>
-              <CardTitle className={isEmbedded ? "text-xl" : ""}>
+              <CardTitle>
                 Distribution des votes
               </CardTitle>
             </CardHeader>
@@ -1405,7 +1405,7 @@ function ResultDisplay({ data }: { data: ResultData }) {
           {participationRateDisplay ? (
             <Card className="border-none bg-brand-dark-blue shadow-none">
               <CardHeader>
-                <CardTitle className={isEmbedded ? "text-xl" : ""}>
+                <CardTitle>
                   Participation
                 </CardTitle>
               </CardHeader>

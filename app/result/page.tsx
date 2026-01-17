@@ -505,7 +505,8 @@ function ResultContent() {
     <VictoryThresholdContext.Provider
       value={{ victoryThreshold, setVictoryThreshold }}>
       <RankMentionsContext.Provider value={{ rankMentions, setRankMentions }}>
-        <main className="flex min-h-screen flex-col p-4 md:p-8">
+        <main
+          className={`flex min-h-screen flex-col ${isEmbedded ? "" : "p-4 md:p-8"}`}>
           <div className="container mx-auto max-w-6xl">
             {!isEmbedded && (
               <div
@@ -1020,6 +1021,7 @@ function ResultDisplay({ data }: { data: ResultData }) {
   const { victoryThreshold } = useVictoryThreshold()
   const { rankMentions } = useRankMentions()
   const searchParams = useSearchParams()
+  const isEmbedded = searchParams.get("d") === "embed"
   const chartContainerRef = useRef<HTMLDivElement>(null)
   const [yAxisPositions, setYAxisPositions] = useState<number[]>([])
   const participationParam = searchParams.get(PARTICIPATION_PARAM_KEY)
@@ -1243,7 +1245,7 @@ function ResultDisplay({ data }: { data: ResultData }) {
       <div className="mb-8 flex flex-col justify-stretch gap-6 md:flex-row">
         <Card className="w-full border-none bg-brand-dark-blue shadow-none">
           <CardHeader>
-            <CardTitle>
+            <CardTitle className={isEmbedded ? "text-xl" : ""}>
               {hasSingleChoice
                 ? "Mention"
                 : rankMentions
@@ -1304,7 +1306,9 @@ function ResultDisplay({ data }: { data: ResultData }) {
         <div className="flex w-full flex-col gap-6">
           <Card className="border-none bg-brand-dark-blue shadow-none">
             <CardHeader>
-              <CardTitle>Distribution des votes</CardTitle>
+              <CardTitle className={isEmbedded ? "text-xl" : ""}>
+                Distribution des votes
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <div ref={chartContainerRef} className="relative h-80">
@@ -1401,7 +1405,9 @@ function ResultDisplay({ data }: { data: ResultData }) {
           {participationRateDisplay ? (
             <Card className="border-none bg-brand-dark-blue shadow-none">
               <CardHeader>
-                <CardTitle>Participation</CardTitle>
+                <CardTitle className={isEmbedded ? "text-xl" : ""}>
+                  Participation
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="flex flex-col gap-2">

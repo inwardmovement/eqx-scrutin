@@ -347,13 +347,14 @@ function ResultContent() {
   const handleCopyText = () => {
     if (!data) return
 
-    // Trier les choix par score
-    const sortedChoices = Object.entries(data.distribution)
-      .map(([name, data]) => ({
-        name,
-        ...data,
-      }))
-      .sort((a, b) => parseFloat(b.score) - parseFloat(a.score))
+    // Trier les choix par score ou conserver l'ordre original
+    const entries = Object.entries(data.distribution).map(([name, data]) => ({
+      name,
+      ...data,
+    }))
+    const sortedChoices = rankMentions
+      ? entries.sort((a, b) => parseFloat(b.score) - parseFloat(a.score))
+      : entries
 
     // Filtrer les choix gagnants
     const winningChoices = sortedChoices.filter(choice => {
@@ -395,7 +396,9 @@ function ResultContent() {
     if (winningChoices.length === 0) {
       const introText = hasSingleChoice
         ? "Le scrutin a abouti à la mention suivante :"
-        : "Le scrutin a abouti au classement suivant :"
+        : rankMentions
+          ? "Le scrutin a abouti au classement suivant :"
+          : "Le scrutin a abouti aux mentions suivantes :"
       textToCopy = `${introText}\n\n${classementSynthese}`
     } else if (winningChoices.length === 1) {
       const winner = winningChoices[0]
@@ -410,7 +413,8 @@ function ResultContent() {
     }
 
     if (winningChoices.length > 0 && !hasSingleChoice) {
-      textToCopy += `\n\nClassement complet :\n\n${classementSynthese}`
+      const fullLabel = rankMentions ? "Classement complet" : "Mentions"
+      textToCopy += `\n\n${fullLabel} :\n\n${classementSynthese}`
     }
 
     navigator.clipboard

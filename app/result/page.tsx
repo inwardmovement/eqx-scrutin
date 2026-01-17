@@ -918,7 +918,7 @@ function RankMentionsToggle() {
       checked={rankMentions}
       onCheckedChange={handleToggle}
       onSelect={event => event.preventDefault()}>
-      Classer les mentions
+      Classer par score
     </DropdownMenuCheckboxItem>
   )
 }

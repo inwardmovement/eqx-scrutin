@@ -27,6 +27,7 @@ export function generateEmbedCode(embedUrl: string): string {
 
     return `<iframe title="Résultat du scrutin" id="iframeResize" style="border: none; width: 100%; height: 500px" src="${escapedUrl}"></iframe>
       <script>
+        // Dimensionner automatiquement l'iframe
         const iframeResize = document.querySelector("#iframeResize")
         window.addEventListener("message", function (event) {
           if (event.data.type === "iframeHeight") {

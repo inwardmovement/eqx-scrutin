@@ -50,8 +50,13 @@ export async function processDocument(
       fileContent = decoder.decode(arrayBuffer)
       console.log("File content:", fileContent)
 
-      // Parse CSV content using PapaParse
+      // Détection du format "une valeur par ligne" (sans virgule ni point-virgule)
+      // ex. : première ligne = nom de la proposition, lignes suivantes = une mention par ligne
+      const hasCsvDelimiter = /[,;\t]/.test(fileContent)
+      const singleColumnDelimiter = fileContent.includes("|") ? "\x01" : "|"
+
       const parseResult = Papa.parse(fileContent, {
+        delimiter: hasCsvDelimiter ? undefined : singleColumnDelimiter,
         skipEmptyLines: true,
         transformHeader: header => header.trim(),
         transform: value => value.trim(),

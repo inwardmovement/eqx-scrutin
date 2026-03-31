@@ -79,6 +79,8 @@ type ResultData = {
       distribution: {
         [mention: string]: number
       }
+      rank?: number
+      tieBreakScore?: string
     }
   }
   winner?: string
@@ -353,7 +355,12 @@ function ResultContent() {
       ...data,
     }))
     const sortedChoices = rankMentions
-      ? entries.sort((a, b) => parseFloat(b.score) - parseFloat(a.score))
+      ? entries.sort((a, b) => {
+          if (a.rank !== undefined && b.rank !== undefined) {
+            return a.rank - b.rank
+          }
+          return parseFloat(b.score) - parseFloat(a.score)
+        })
       : entries
 
     // Filtrer les choix gagnants
@@ -362,6 +369,7 @@ function ResultContent() {
         return false
       }
       if (victoryThreshold === "top_1") {
+        if (choice.rank !== undefined) return choice.rank === 1
         const maxScore = Math.max(
           ...sortedChoices.map(c => parseFloat(c.score)),
         )
@@ -1065,7 +1073,12 @@ function ResultDisplay({ data }: { data: ResultData }) {
       ...data,
     }))
     if (rankMentions) {
-      return entries.sort((a, b) => parseFloat(b.score) - parseFloat(a.score))
+      return entries.sort((a, b) => {
+        if (a.rank !== undefined && b.rank !== undefined) {
+          return a.rank - b.rank
+        }
+        return parseFloat(b.score) - parseFloat(a.score)
+      })
     }
     // Conserver l'ordre original du fichier
     return entries
@@ -1080,6 +1093,7 @@ function ResultDisplay({ data }: { data: ResultData }) {
       return false
     }
     if (victoryThreshold === "top_1") {
+      if (choice.rank !== undefined) return choice.rank === 1
       const maxScore = Math.max(...sortedChoices.map(c => parseFloat(c.score)))
       return parseFloat(choice.score) === maxScore
     }
@@ -1288,7 +1302,15 @@ function ResultDisplay({ data }: { data: ResultData }) {
                           }}>
                           {choice.mention}
                         </span>{" "}
-                        ({choice.score})
+                        {choice.tieBreakScore ? (
+                          <abbr
+                            title={`Départage: ${choice.tieBreakScore}`}
+                            className="cursor-help underline decoration-dotted underline-offset-2">
+                            ({choice.score})
+                          </abbr>
+                        ) : (
+                          `(${choice.score})`
+                        )}
                       </p>
                     </div>
                     {isWinner(choice) ? (

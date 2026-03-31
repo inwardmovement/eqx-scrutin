@@ -43,7 +43,19 @@ export function formatDataForUrl(data: ScrutinData): string {
       .join("")
 
     // Retourne le format demandé pour ce choix
-    return `${encodedName}~${mentionShortcut}~${distributionString}~${choice.score}`
+    const parts = [
+      encodedName,
+      mentionShortcut,
+      distributionString,
+      choice.score,
+    ]
+    if (choice.tieBreakScore || choice.rank !== undefined) {
+      parts.push(choice.tieBreakScore || "")
+      if (choice.rank !== undefined) {
+        parts.push(choice.rank.toString())
+      }
+    }
+    return parts.join("~")
   })
 
   // Joint tous les choix avec le caractère '_'
@@ -56,8 +68,14 @@ export function parseUrlData(urlData: string): ScrutinData {
 
   const choices = urlData.split("_")
   for (const choice of choices) {
-    const [encodedName, mentionShortcut, distributionString, score] =
-      choice.split("~")
+    const parts = choice.split("~")
+    const encodedName = parts[0]
+    const mentionShortcut = parts[1]
+    const distributionString = parts[2]
+    const score = parts[3]
+    const tieBreakScore = parts[4] || undefined
+    const rankStr = parts[5]
+    const rank = rankStr ? parseInt(rankStr, 10) : undefined
 
     // Remplace les + par des espaces avant de décoder
     const name = decodeURIComponent(encodedName.replace(/\+/g, " "))
@@ -86,20 +104,33 @@ export function parseUrlData(urlData: string): ScrutinData {
       mention,
       score,
       distribution: distributionData,
+      ...(tieBreakScore && tieBreakScore !== "" ? { tieBreakScore } : {}),
+      ...(rank !== undefined ? { rank } : {}),
     }
   }
 
-  // Récupérer le gagnant (celui avec le meilleur score)
+  // Récupérer le gagnant (celui avec le meilleur rang, ou sinon le meilleur score)
   let bestScore = -Infinity
+  let bestRank = Infinity
   let winner = ""
   let winningMention = ""
 
   Object.entries(distribution).forEach(([name, choice]) => {
-    const scoreNum = parseFloat(choice.score)
-    if (scoreNum > bestScore) {
-      bestScore = scoreNum
-      winner = name
-      winningMention = choice.mention
+    if (choice.rank !== undefined) {
+      if (choice.rank < bestRank) {
+        bestRank = choice.rank
+        winner = name
+        winningMention = choice.mention
+        bestScore = parseFloat(choice.score) // Synchro pour compatibilité
+      }
+    } else {
+      // Fallback pour les anciennes URLs sans rank
+      const scoreNum = parseFloat(choice.score)
+      if (scoreNum > bestScore) {
+        bestScore = scoreNum
+        winner = name
+        winningMention = choice.mention
+      }
     }
   })
 

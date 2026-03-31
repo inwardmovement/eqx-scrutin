@@ -10,6 +10,8 @@ export type Choice = {
   mention: string
   score: string
   distribution: Distribution
+  tieBreakScore?: string
+  rank?: number
 }
 
 export type ScrutinData = {
@@ -205,10 +207,15 @@ export async function processDocument(
         })
       }
 
-      // Calculate distribution and random scores for each choice
-      let bestScore = -1
-      let winner = ""
-      let winningMention = ""
+      // Calculate distribution and recursive scores for each choice
+      const candidatesData: any[] = []
+
+      function calcScore(mcIndex: number, p: number, q: number) {
+        const denominator = 1 - p - q
+        return denominator !== 0
+          ? mcIndex + 0.5 * ((p - q) / denominator)
+          : mcIndex
+      }
 
       choices.forEach(choice => {
         // Calculer le nombre total de votes pour ce choix (exclure les abstentions)
@@ -226,38 +233,114 @@ export async function processDocument(
         )
         const dominantMentionIndex = mentionOrder.indexOf(dominantMention)
 
-        // Calculer Pc (partisans) - somme des votes strictement supérieurs à la mention majoritaire
-        let partisans = 0
-        for (let i = dominantMentionIndex + 1; i < mentionOrder.length; i++) {
-          partisans += mentionCounts[choice][mentionOrder[i]] || 0
-        }
-        const Pc = totalVotes > 0 ? partisans / totalVotes : 0
+        // Calcul récursif pour le départage
+        const nMax = mentionOrder.length
+        const scores: number[] = []
+        const vectors: number[] = []
 
-        // Calculer Oc (opposants) - somme des votes strictement inférieurs à la mention majoritaire
-        let opposants = 0
-        for (let i = 0; i < dominantMentionIndex; i++) {
-          opposants += mentionCounts[choice][mentionOrder[i]] || 0
-        }
-        const Oc = totalVotes > 0 ? opposants / totalVotes : 0
+        for (let n = 1; n < nMax; n++) {
+          let partisans = 0
+          for (let i = dominantMentionIndex + n; i < mentionOrder.length; i++) {
+            partisans += mentionCounts[choice][mentionOrder[i]] || 0
+          }
+          const p_n = totalVotes > 0 ? partisans / totalVotes : 0
 
-        // Calculer le score selon la formule : Mc + 0.5 * ((Pc - Oc)/(1 - Pc - Oc))
-        const denominator = 1 - Pc - Oc
-        const score =
-          denominator !== 0
-            ? dominantMentionIndex + 0.5 * ((Pc - Oc) / denominator)
-            : dominantMentionIndex
+          let opposants = 0
+          for (let i = 0; i <= dominantMentionIndex - n; i++) {
+            opposants += mentionCounts[choice][mentionOrder[i]] || 0
+          }
+          const q_n = totalVotes > 0 ? opposants / totalVotes : 0
 
-        // Mettre à jour le gagnant si ce score est plus élevé
-        if (score > bestScore) {
-          bestScore = score
-          winner = choice
-          winningMention = dominantMention
+          scores.push(calcScore(dominantMentionIndex, p_n, q_n))
+          vectors.push(-q_n)
+          vectors.push(p_n)
         }
 
-        distribution[choice] = {
-          mention: dominantMention,
-          score: score.toFixed(2),
-          distribution: mentionCounts[choice],
+        candidatesData.push({
+          choice,
+          dominantMention,
+          baseScore: scores[0],
+          scores,
+          vectors,
+          tieBreakDepth: 0,
+        })
+      })
+
+      // Trier les candidats pour déterminer le vainqueur (ordre décroissant)
+      candidatesData.sort((a, b) => {
+        // 1. Comparer les scores récursivement
+        for (let i = 0; i < Math.max(a.scores.length, b.scores.length); i++) {
+          const scoreA = a.scores[i] || 0
+          const scoreB = b.scores[i] || 0
+          if (Math.abs(scoreB - scoreA) > 1e-9) {
+            return scoreB - scoreA
+          }
+        }
+        // 2. Si tous les scores sont égaux, comparer le vecteur lexicographique (-q^n, p^n)
+        for (let i = 0; i < Math.max(a.vectors.length, b.vectors.length); i++) {
+          const vecA = a.vectors[i] || 0
+          const vecB = b.vectors[i] || 0
+          if (Math.abs(vecB - vecA) > 1e-9) {
+            return vecB - vecA
+          }
+        }
+        return 0 // Égalité parfaite
+      })
+
+      const winner = candidatesData.length > 0 ? candidatesData[0].choice : ""
+      const winningMention =
+        candidatesData.length > 0 ? candidatesData[0].dominantMention : ""
+
+      // Calculer le tieBreakDepth pour chaque groupe d'égalité
+      let groupStart = 0;
+      while (groupStart < candidatesData.length) {
+        let groupEnd = groupStart + 1;
+        while (
+          groupEnd < candidatesData.length &&
+          Math.abs(candidatesData[groupEnd].baseScore - candidatesData[groupStart].baseScore) < 1e-9 &&
+          candidatesData[groupEnd].dominantMention === candidatesData[groupStart].dominantMention
+        ) {
+          groupEnd++;
+        }
+        
+        if (groupEnd - groupStart > 1) {
+          let maxDepthForGroup = 0;
+          for (let i = groupStart; i < groupEnd - 1; i++) {
+            const a = candidatesData[i]
+            const b = candidatesData[i+1]
+            let depth = 0
+            for (let d = 1; d < Math.max(a.scores.length, b.scores.length); d++) {
+              if (Math.abs((a.scores[d] || 0) - (b.scores[d] || 0)) > 1e-9 ||
+                  Math.abs((a.vectors[(d-1)*2] || 0) - (b.vectors[(d-1)*2] || 0)) > 1e-9 ||
+                  Math.abs((a.vectors[(d-1)*2+1] || 0) - (b.vectors[(d-1)*2+1] || 0)) > 1e-9) {
+                depth = d;
+                break;
+              }
+            }
+            maxDepthForGroup = Math.max(maxDepthForGroup, depth);
+          }
+          
+          for (let i = groupStart; i < groupEnd; i++) {
+            candidatesData[i].tieBreakDepth = maxDepthForGroup;
+          }
+        }
+        groupStart = groupEnd;
+      }
+
+      // Préparer la distribution finale
+      candidatesData.forEach((data, index) => {
+        let tieBreakScore: string | undefined = undefined
+
+        if (data.tieBreakDepth && data.tieBreakDepth > 0 && data.tieBreakDepth < data.scores.length) {
+          tieBreakScore = data.scores[data.tieBreakDepth].toFixed(2)
+        }
+
+        distribution[data.choice] = {
+          mention: data.dominantMention,
+          score: data.baseScore.toFixed(2),
+          ...(tieBreakScore ? { tieBreakScore } : {}),
+          rank: index + 1,
+          distribution: mentionCounts[data.choice],
         }
       })
 

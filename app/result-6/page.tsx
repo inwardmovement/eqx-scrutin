@@ -56,6 +56,8 @@ type ResultData = {
       distribution: {
         [mention: string]: number
       }
+      rank?: number
+      tieBreakScore?: string
     }
   }
   winner?: string
@@ -155,17 +157,22 @@ function ResultContent() {
   const handleCopyText = () => {
     if (!data) return
 
-    // Trier les choix par score
-    const sortedChoices = Object.entries(data.distribution)
-      .map(([name, data]) => ({
-        name,
-        ...data,
-      }))
-      .sort((a, b) => parseFloat(b.score) - parseFloat(a.score))
+    const entries = Object.entries(data.distribution).map(([name, data]) => ({
+      name,
+      ...data,
+    }))
+
+    const sortedChoices = entries.sort((a, b) => {
+      if (a.rank !== undefined && b.rank !== undefined) {
+        return a.rank - b.rank
+      }
+      return parseFloat(b.score) - parseFloat(a.score)
+    })
 
     // Filtrer les choix gagnants
     const winningChoices = sortedChoices.filter(choice => {
       if (victoryThreshold === "top_1") {
+        if (choice.rank !== undefined) return choice.rank === 1;
         const maxScore = Math.max(
           ...sortedChoices.map(c => parseFloat(c.score)),
         )
@@ -590,6 +597,7 @@ function ResultDisplay({ data }: { data: ResultData }) {
 
   const isWinner = (choice: (typeof sortedChoices)[0]) => {
     if (victoryThreshold === "top_1") {
+      if (choice.rank !== undefined) return choice.rank === 1;
       const maxScore = Math.max(...sortedChoices.map(c => parseFloat(c.score)))
       return parseFloat(choice.score) === maxScore
     }
@@ -668,7 +676,15 @@ function ResultDisplay({ data }: { data: ResultData }) {
                           }}>
                           {choice.mention}
                         </span>{" "}
-                        ({choice.score})
+                        {choice.tieBreakScore ? (
+                          <abbr
+                            title={`Départage: ${choice.tieBreakScore}`}
+                            className="cursor-help underline decoration-dotted underline-offset-2">
+                            ({choice.score})
+                          </abbr>
+                        ) : (
+                          `(${choice.score})`
+                        )}
                       </p>
                     </div>
                     {isWinner(choice) ? (

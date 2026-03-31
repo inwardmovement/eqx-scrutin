@@ -46,6 +46,8 @@ type Choice = {
   mention: string
   score: string
   distribution: Distribution
+  tieBreakScore?: string
+  rank?: number
 }
 
 type ScrutinData = {
@@ -78,7 +80,21 @@ export function formatDataForUrl(data: ScrutinData): string {
         return `${MENTION_SHORTCUTS[mention]}${count}`
       })
       .join("")
-    return `${encodedName}~${mentionShortcut}~${distributionString}~${choice.score}`
+    
+    // Retourne le format demandé pour ce choix
+    const parts = [
+      encodedName,
+      mentionShortcut,
+      distributionString,
+      choice.score,
+    ]
+    if (choice.tieBreakScore || choice.rank !== undefined) {
+      parts.push(choice.tieBreakScore || "")
+      if (choice.rank !== undefined) {
+        parts.push(choice.rank.toString())
+      }
+    }
+    return parts.join("~")
   })
   return choices.join("_")
 }
@@ -95,7 +111,14 @@ export function parseUrlData(urlData: string): ScrutinData {
       continue
     }
 
-    const [encodedName, mentionShortcut, distributionString, score] = parts
+    const encodedName = parts[0]
+    const mentionShortcut = parts[1]
+    const distributionString = parts[2]
+    const score = parts[3]
+    const tieBreakScore = parts[4] || undefined
+    const rankStr = parts[5]
+    const rank = rankStr ? parseInt(rankStr, 10) : undefined
+
     // Décoder tous les caractères spéciaux
     const name = decodeURIComponent(encodedName)
 
@@ -143,19 +166,32 @@ export function parseUrlData(urlData: string): ScrutinData {
       mention,
       score,
       distribution: distributionData,
+      ...(tieBreakScore && tieBreakScore !== "" ? { tieBreakScore } : {}),
+      ...(rank !== undefined ? { rank } : {}),
     }
   }
 
+  // Récupérer le gagnant (celui avec le meilleur rang, ou sinon le meilleur score)
   let bestScore = -Infinity
+  let bestRank = Infinity
   let winner = ""
   let winningMention = ""
 
   Object.entries(distribution).forEach(([name, choice]) => {
-    const scoreNum = parseFloat(choice.score)
-    if (scoreNum > bestScore) {
-      bestScore = scoreNum
-      winner = name
-      winningMention = choice.mention
+    if (choice.rank !== undefined) {
+      if (choice.rank < bestRank) {
+        bestRank = choice.rank
+        winner = name
+        winningMention = choice.mention
+        bestScore = parseFloat(choice.score)
+      }
+    } else {
+      const scoreNum = parseFloat(choice.score)
+      if (scoreNum > bestScore) {
+        bestScore = scoreNum
+        winner = name
+        winningMention = choice.mention
+      }
     }
   })
 

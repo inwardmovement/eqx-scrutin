@@ -1304,7 +1304,7 @@ function ResultDisplay({ data }: { data: ResultData }) {
                         </span>{" "}
                         {choice.tieBreakScore ? (
                           <abbr
-                            title={`Départage: ${choice.tieBreakScore}`}
+                            title={`Après départage : ${choice.tieBreakScore}`}
                             className="cursor-help underline decoration-dotted underline-offset-2">
                             ({choice.score})
                           </abbr>

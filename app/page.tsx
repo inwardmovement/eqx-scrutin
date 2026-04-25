@@ -171,6 +171,7 @@ function HomeContent() {
             width={200}
             height={94}
             className="mb-4"
+            loading="eager"
           />
           <CardTitle className="text-2xl">Scrutin</CardTitle>
         </CardHeader>

@@ -8,7 +8,6 @@ import {
   useContext,
   useRef,
   useMemo,
-  useCallback,
   useId,
 } from "react"
 import type { ChangeEvent, KeyboardEvent } from "react"
@@ -16,16 +15,13 @@ import { useRouter, useSearchParams } from "next/navigation"
 import Image from "next/image"
 import Link from "next/link"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field"
 import {
   Dialog,
-  DialogClose,
   DialogContent,
-  DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
@@ -589,6 +585,7 @@ function ResultContent() {
                   width={150}
                   height={70}
                   className="hidden md:block"
+                  loading="eager"
                 />
               </div>
             )}

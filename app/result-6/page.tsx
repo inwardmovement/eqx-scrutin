@@ -338,6 +338,7 @@ function ResultContent() {
                 width={150}
                 height={70}
                 className="hidden md:block"
+                loading="eager"
               />
             </div>
           )}

@@ -327,20 +327,39 @@ export async function processDocument(
         groupStart = groupEnd;
       }
 
-      // Préparer la distribution finale
-      candidatesData.forEach((data, index) => {
-        let tieBreakScore: string | undefined = undefined
+      // Préparer la distribution finale en conservant l'ordre original du CSV.
+      // Le rang reste issu du classement calculé pour permettre le tri optionnel côté UI.
+      const candidatesByChoice = new Map(
+        candidatesData.map((candidate, index) => [
+          candidate.choice,
+          {
+            ...candidate,
+            rank: index + 1,
+          },
+        ]),
+      )
 
-        if (data.tieBreakDepth && data.tieBreakDepth > 0 && data.tieBreakDepth < data.scores.length) {
-          tieBreakScore = data.scores[data.tieBreakDepth].toFixed(2)
+      choices.forEach(choice => {
+        const candidate = candidatesByChoice.get(choice)
+        if (!candidate) {
+          return
         }
 
-        distribution[data.choice] = {
-          mention: data.dominantMention,
-          score: data.baseScore.toFixed(2),
+        let tieBreakScore: string | undefined = undefined
+        if (
+          candidate.tieBreakDepth &&
+          candidate.tieBreakDepth > 0 &&
+          candidate.tieBreakDepth < candidate.scores.length
+        ) {
+          tieBreakScore = candidate.scores[candidate.tieBreakDepth].toFixed(2)
+        }
+
+        distribution[choice] = {
+          mention: candidate.dominantMention,
+          score: candidate.baseScore.toFixed(2),
           ...(tieBreakScore ? { tieBreakScore } : {}),
-          rank: index + 1,
-          distribution: mentionCounts[data.choice],
+          rank: candidate.rank,
+          distribution: mentionCounts[choice],
         }
       })
 

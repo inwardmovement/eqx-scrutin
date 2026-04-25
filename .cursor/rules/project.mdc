@@ -3,3 +3,4 @@ alwaysApply: true
 ---
 
 - Quand tu modifies quelque chose qui concerne l'URL de l'app, met aussi à jour handleCopyLink, handleCopyText et handleCopyEmbedCode en conséquence si besoin.
+- Ignore ce qui concerne l'analyse et l'affichage en version 6 mentions : app/result-6 et app/actions-6.ts.

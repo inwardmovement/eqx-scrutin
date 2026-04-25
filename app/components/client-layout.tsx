@@ -1,6 +1,3 @@
-"use client"
-
-import { useSearchParams } from "next/navigation"
 import { Body } from "./body"
 
 export function ClientLayout({
@@ -10,15 +7,8 @@ export function ClientLayout({
   children: React.ReactNode
   className: string
 }) {
-  const searchParams = useSearchParams()
-  const isEmbedded = searchParams.get("d") === "embed"
-
   return (
-    <html
-      lang="fr"
-      suppressHydrationWarning
-      className={className}
-      style={isEmbedded ? { overflow: "hidden" } : undefined}>
+    <html lang="fr" suppressHydrationWarning className={className}>
       <Body>{children}</Body>
     </html>
   )

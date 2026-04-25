@@ -8,8 +8,16 @@ export function Body({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const isEmbedded =
       new URLSearchParams(window.location.search).get("d") === "embed"
+    const htmlElement = document.documentElement
+    const previousOverflow = htmlElement.style.overflow
+
     if (isEmbedded) {
       document.body.style.backgroundColor = "initial"
+      htmlElement.style.overflow = "hidden"
+    }
+
+    return () => {
+      htmlElement.style.overflow = previousOverflow
     }
   }, [])
 

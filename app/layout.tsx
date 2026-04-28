@@ -12,7 +12,7 @@ export const metadata: Metadata = {
   description: "Analyse des votes au jugement médian",
   generator: "Next.js",
   other: process.env.VERCEL_GIT_COMMIT_SHA
-    ? { version: process.env.VERCEL_GIT_COMMIT_SHA }
+    ? { version: process.env.VERCEL_GIT_COMMIT_SHA.substring(0, 7) }
     : undefined,
 }
 

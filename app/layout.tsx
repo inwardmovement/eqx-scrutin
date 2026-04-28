@@ -11,8 +11,8 @@ export const metadata: Metadata = {
   title: "Scrutin | Équinoxe",
   description: "Analyse des votes au jugement médian",
   generator: "Next.js",
-  other: process.env.VERCEL_GIT_COMMIT_SHA
-    ? { version: process.env.VERCEL_GIT_COMMIT_SHA.substring(0, 7) }
+  other: process.env.GIT_HASH
+    ? { version: process.env.GIT_HASH.substring(0, 7) }
     : undefined,
 }
 

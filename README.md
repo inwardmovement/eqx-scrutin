@@ -1,3 +1,6 @@
+> [!NOTE]
+> En cours de migration vers https://github.com/Parti-Equinoxe/eqx-tools
+
 # Fonctionnalités
 
 - Analyse des votes au [jugement médian](https://fr.wikipedia.org/wiki/Jugement_usuel)

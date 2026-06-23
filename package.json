@@ -38,7 +38,7 @@
     "@types/papaparse": "^5.3.16",
     "@types/react": "^19.2.0",
     "@types/react-dom": "^19.2.0",
-    "postcss": "^8.5.11",
+    "postcss": "^8.5.12",
     "prettier": "^3.5.3",
     "prettier-plugin-tailwindcss": "^0.6.11",
     "shadcn": "^4.4.0",
